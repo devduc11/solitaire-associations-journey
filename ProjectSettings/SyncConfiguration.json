@@ -1,0 +1,12 @@
+{
+    "syncOnInspect": true,
+    "syncOnSceneSave": true,
+    "syncOnAssemblyReload": true,
+    "syncScenesOnBuild": true,
+    "failBuildOnError": false,
+    "failBuildOnWarnings": false,
+    "skipSyncOnFilterError": false,
+    "enableEditorToolboxIntegration": true,
+    "enableTriInspectorIntegration": true,
+    "enableOdinInspectorIntegration": true
+}
