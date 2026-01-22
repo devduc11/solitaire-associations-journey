@@ -2,7 +2,7 @@ using DBD.BaseGame;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class ItemCard : Base_DragObject
+public class ItemCard : BaseDragObject
 {
     [SerializeField]
     private int CardPackageID;

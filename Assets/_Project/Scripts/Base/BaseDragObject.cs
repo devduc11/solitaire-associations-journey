@@ -6,7 +6,7 @@ using DG.Tweening;
 using Teo.AutoReference;
 using DBD.BaseGame;
 
-public class Base_DragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
+public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
     [SerializeField, Get] protected Collider2D col2D;
 
