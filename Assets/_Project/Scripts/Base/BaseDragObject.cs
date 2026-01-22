@@ -9,8 +9,8 @@ using DBD.BaseGame;
 
 public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
-    [SerializeField, Get] protected Collider2D col2D;
-    [SerializeField, Get] protected BoxCollider2D boxCollider2D;
+    // [SerializeField, Get] protected Collider2D col2D;
+    // [SerializeField, Get] protected BoxCollider2D boxCollider2D;
 
     // [SerializeField, Get] public SpriteRenderer spriteRenderer;
     [SerializeField, Get] protected Image image;
@@ -103,7 +103,7 @@ public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandl
 
     public virtual float SetScaleEffectDown()
     {
-        return 1.2f;
+        return 1f;
     }
 
     public virtual void EffectUp()
@@ -137,12 +137,12 @@ public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandl
     public void SetSizeBoxCol2D()
     {
         RectTransform rect = image.rectTransform;
-        boxCollider2D.size = rect.rect.size;
+        // boxCollider2D.size = rect.rect.size;
     }
 
     public void OnOffCol2D(bool bl)
     {
-        col2D.enabled = bl;
+        // col2D.enabled = bl;
     }
 
     private Vector2 GetWorldPoint(Vector2 screenPosition)

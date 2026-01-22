@@ -156,7 +156,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 184.32805}
+  m_SizeDelta: {x: 0, y: 184.37903}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &21910866
 MonoBehaviour:
@@ -837,7 +837,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 184.32805}
+  m_SizeDelta: {x: 0, y: 184.37903}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &761232873
 MonoBehaviour:
@@ -941,7 +941,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 184.32805}
+  m_SizeDelta: {x: 0, y: 184.37903}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &833226090
 MonoBehaviour:
@@ -1045,7 +1045,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 184.32805}
+  m_SizeDelta: {x: 0, y: 184.37903}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &864053921
 MonoBehaviour:
@@ -1728,7 +1728,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 184.32805}
+  m_SizeDelta: {x: 0, y: 184.37903}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1568743328
 MonoBehaviour:
@@ -1882,7 +1882,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 184.32805}
+  m_SizeDelta: {x: 0, y: 184.37903}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1917986964
 MonoBehaviour:
@@ -2037,6 +2037,7 @@ MonoBehaviour:
   spawnedCount: 0
   poolObjs: []
   itemCardPrefab: {fileID: 5023417839054895160, guid: 8a62932c0485d0248a2ae7515fd8e391, type: 3}
+  itemCards: []
   indexPos: -1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
