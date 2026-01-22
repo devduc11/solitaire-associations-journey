@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using DG.Tweening;
 using Teo.AutoReference;
@@ -9,14 +10,16 @@ using DBD.BaseGame;
 public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
     [SerializeField, Get] protected Collider2D col2D;
+    [SerializeField, Get] protected BoxCollider2D boxCollider2D;
 
-    [SerializeField, Get] public SpriteRenderer spriteRenderer;
+    // [SerializeField, Get] public SpriteRenderer spriteRenderer;
+    [SerializeField, Get] protected Image image;
     [SerializeField] protected int sortingOrder;
-    [SerializeField] protected Vector3 startPosition;
+    [SerializeField] protected Vector2 startPosition;
     [SerializeField] protected Vector3 startRotation;
     [SerializeField] protected Vector3 startScale;
-    private Vector3 spoonPosition;
-    private Vector3 mouseDownPosition;
+    private Vector2 spoonPosition;
+    private Vector2 mouseDownPosition;
     protected Camera mainCamera;
     protected static bool isAnyDragging = false; // chỉ cho phép 1 đối tượng di chuyển
     protected bool isDragging = false;
@@ -40,15 +43,19 @@ public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandl
 
     public virtual void OnPointerDown(PointerEventData eventData)
     {
-        // Debug.Log($"datdb - pointer down ");
+        if (isAnyDragging) return;
+
         isAnyDragging = true;
         isDragging = true;
 
         startPosition = transform.position;
+
+        // LƯU VỊ TRÍ BAN ĐẦU CỦA OBJECT
         spoonPosition = transform.position;
+
+        // LƯU VỊ TRÍ CHUỘT LÚC BẤM
         mouseDownPosition = GetWorldPoint(eventData.position);
 
-        SetOrderInLayer(50);
         EffectDown();
         OnOffCol2D(false);
     }
@@ -57,12 +64,19 @@ public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandl
     {
         if (!isDragging) return;
 
-        Vector3 rayPoint = GetWorldPoint(eventData.position);
-        Vector3 delta = rayPoint - mouseDownPosition;
-        Vector3 pos = spoonPosition + delta;
+        Vector2 rayPoint = GetWorldPoint(eventData.position);
+        Vector2 delta = rayPoint - mouseDownPosition;
 
-        transform.position = new Vector3(pos.x, pos.y, transform.position.z);
-        transform.position = GetMousePositionClamp();
+        Vector2 targetPos2D = spoonPosition + delta;
+        Vector2 clampedPos2D = GetMousePositionClamp(targetPos2D);
+
+        // GIỮ NGUYÊN Z
+        transform.position = new Vector3(
+            clampedPos2D.x,
+            clampedPos2D.y,
+            transform.position.z
+        );
+        // Debug.Log($"Drag pos: {transform.position}");
     }
 
     public virtual void OnPointerUp(PointerEventData eventData)
@@ -72,10 +86,8 @@ public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandl
         isDragging = false;
         isAnyDragging = false;
 
-        OnOffCol2D(false);
-        // EffectUp();
+        EffectUp();
     }
-
 
     public virtual void EffectDown()
     {
@@ -96,29 +108,36 @@ public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandl
 
     public virtual void EffectUp()
     {
+        float z = transform.position.z; // GIỮ Z HIỆN TẠI
+
         Sequence sequence = DOTween.Sequence();
         sequence.Join(transform.DOLocalRotate(startRotation, 0.2f));
         sequence.Join(transform.DOScale(startScale, 0.2f));
+
         if (IsMoveToStartPosition())
         {
-            sequence.Join(transform.DOMove(startPosition, 0.2f));
+            sequence.Join(transform.DOMove(
+                new Vector3(startPosition.x, startPosition.y, z),
+                0.2f
+            ));
         }
 
         sequence.OnComplete(() =>
         {
             OnOffCol2D(true);
-            SetOrderInLayer(sortingOrder);
         });
     }
+
 
     protected virtual bool IsMoveToStartPosition()
     {
         return true;
     }
 
-    public virtual void SetOrderInLayer(int sortingOrder)
+    public void SetSizeBoxCol2D()
     {
-        spriteRenderer.sortingOrder = sortingOrder;
+        RectTransform rect = image.rectTransform;
+        boxCollider2D.size = rect.rect.size;
     }
 
     public void OnOffCol2D(bool bl)
@@ -126,42 +145,51 @@ public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandl
         col2D.enabled = bl;
     }
 
-    private Vector3 GetWorldPoint(Vector2 screenPosition)
+    private Vector2 GetWorldPoint(Vector2 screenPosition)
     {
         Ray ray = Camera.main.ScreenPointToRay(screenPosition);
-        float distance = Vector3.Distance(transform.position, Camera.main.transform.position);
+        float distance = Vector2.Distance(transform.position, Camera.main.transform.position);
         return ray.GetPoint(distance);
     }
 
-    public Vector3 GetMousePositionClamp()
+    public Vector2 GetMousePositionClamp(Vector2 targetPos)
     {
-        Vector3 mousePosition = Vector3.zero;
-        mousePosition.x = Mathf.Clamp(transform.position.x, Pos_Screen_Left_Right().x + PercentClampLeftRight().x,
-            Pos_Screen_Left_Right().y - PercentClampLeftRight().y);
-        mousePosition.y = Mathf.Clamp(transform.position.y, Pos_Screen_Bottom_Top().x + PercentClampBottomTop().x,
-            Pos_Screen_Bottom_Top().y - PercentClampBottomTop().y);
-        mousePosition.z = transform.position.z;
+        Vector2 mousePosition = Vector2.zero;
+
+        mousePosition.x = Mathf.Clamp(
+            targetPos.x,
+            Pos_Screen_Left_Right().x + PercentClampLeftRight().x,
+            Pos_Screen_Left_Right().y - PercentClampLeftRight().y
+        );
+
+        mousePosition.y = Mathf.Clamp(
+            targetPos.y,
+            Pos_Screen_Bottom_Top().x + PercentClampBottomTop().x,
+            Pos_Screen_Bottom_Top().y - PercentClampBottomTop().y
+        );
+
         return mousePosition;
     }
 
-    public Vector3 Pos_Screen_Left_Right() // x = screenLeft | y = screenRight
+
+    public Vector2 Pos_Screen_Left_Right() // x = screenLeft | y = screenRight
     {
         float cameraHeight = mainCamera.orthographicSize * 2;
         float cameraWidth = cameraHeight * mainCamera.aspect;
 
         float screenLeft = mainCamera.transform.position.x - cameraWidth / 2;
         float screenRight = mainCamera.transform.position.x + cameraWidth / 2;
-        return new Vector3(screenLeft, screenRight);
+        return new Vector2(screenLeft, screenRight);
     }
 
-    public Vector3 Pos_Screen_Bottom_Top() // x = screenBottom | y = screenTop
+    public Vector2 Pos_Screen_Bottom_Top() // x = screenBottom | y = screenTop
     {
         float cameraHeight = mainCamera.orthographicSize * 2;
         float cameraWidth = cameraHeight * mainCamera.aspect;
 
         float screenBottom = mainCamera.transform.position.y - cameraHeight / 2;
         float screenTop = mainCamera.transform.position.y + cameraHeight / 2;
-        return new Vector3(screenBottom, screenTop);
+        return new Vector2(screenBottom, screenTop);
     }
 
     protected virtual Vector2 PercentClampLeftRight() // x = Left | y = Right

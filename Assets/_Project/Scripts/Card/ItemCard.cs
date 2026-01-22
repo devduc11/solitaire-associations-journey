@@ -6,6 +6,15 @@ public class ItemCard : BaseDragObject
 {
     [SerializeField]
     private int CardPackageID;
+    // [SerializeField]
+    // private int indexPos;
+
+
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+    }
+
     public override void OnPointerDown(PointerEventData eventData)
     {
 
@@ -50,4 +59,16 @@ public class ItemCard : BaseDragObject
         isAnyDragging = false;
         EffectUp();
     }
+
+    public void SetSize(Vector2 size)
+    {
+        image.rectTransform.sizeDelta = size;
+        SetSizeBoxCol2D();
+    }
+
+    // public void SetIndexPos(int indexPos)
+    // {
+    //     this.indexPos = indexPos;
+    // }
+
 }
