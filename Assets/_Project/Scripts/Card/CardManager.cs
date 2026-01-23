@@ -1,15 +1,31 @@
+using System.Collections.Generic;
 using DBD.BaseGame;
 using Teo.AutoReference;
 using UnityEngine;
 
 public class CardManager : BaseMonoBehaviour
 {
-    [SerializeField, GetInChildren]
-    private CardSpawner cardSpawner;
+    private static CardManager instance;
+    public static CardManager Instance => instance;
+    // [SerializeField]
+    // private List<CardBase> cardBases = new List<CardBase>();
+    // public List<CardBase> CardBases => cardBases;
 
-    protected override void Start()
+    protected override void Awake()
     {
-        base.Start();
-        // cardSpawner.SpawnItemCard();
+        base.Awake();
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
+
+    // public void AddCardBase(CardBase cardBase)
+    // {
+    //     cardBases.Add(cardBase);
+    // }
 }

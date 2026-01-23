@@ -9,11 +9,13 @@ using DBD.BaseGame;
 
 public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
+
     // [SerializeField, Get] protected Collider2D col2D;
     // [SerializeField, Get] protected BoxCollider2D boxCollider2D;
 
     // [SerializeField, Get] public SpriteRenderer spriteRenderer;
     [SerializeField, Get] protected Image image;
+    [SerializeField, Get] public RectTransform rect;
     [SerializeField] protected int sortingOrder;
     [SerializeField] protected Vector2 startPosition;
     [SerializeField] protected Vector3 startRotation;
@@ -58,6 +60,9 @@ public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandl
 
         EffectDown();
         OnOffCol2D(false);
+
+        // 🔥 ĐƯA ITEM ĐANG DRAG LÊN TRÊN CÙNG
+        transform.SetAsLastSibling();
     }
 
     public virtual void OnDrag(PointerEventData eventData)

@@ -5,78 +5,84 @@ using UnityEngine.EventSystems;
 
 public class ItemCard : BaseDragObject
 {
-    [SerializeField, GetInChildren, Name("Pos")]
-    protected RectTransform posRect;
     [SerializeField]
-    private int CardPackageID;
+    private int cardPackageID;
+    [SerializeField]
+    private int cardID;
+    public int CardID => cardID;
     [SerializeField]
     private ItemCard itemCardSpawner;
     [SerializeField]
-    private bool isMergeItemCardSpawner;
-
-
-
-    protected override void OnEnable()
-    {
-        base.OnEnable();
-        Debug.Log($"pnad: {posRect.position}");
-    }
+    private ItemGroupCard itemGroupCard;
+    [SerializeField]
+    private bool isGroup;
+    public bool IsGroup => isGroup;
 
     public override void OnPointerDown(PointerEventData eventData)
     {
-        if (isMergeItemCardSpawner) return;
-        if (isAnyDragging)
+        foreach (var item in itemGroupCard.SameCardType())
         {
-            return;
+
+        Debug.Log($"pnad: {item.name}");
         }
-
-        // Nếu dùng nhiều ngón tay thì cũng không cho kéo
-        if (Input.touchCount > 1)
-        {
-            return;
-        }
-
-        base.OnPointerDown(eventData);
-
-        // 🔥 ĐƯA ITEM ĐANG DRAG LÊN TRÊN CÙNG
-        transform.SetAsLastSibling();
+        // ItemGroupCard itemGroupCard = GroupCardSpawner.Instance.ItemGroupCardMove();
+        // transform
     }
-
-    public override void OnDrag(PointerEventData eventData)
+    public void SetParentItemCard(Transform transformParent)
     {
-        if (isMergeItemCardSpawner) return;
-        if (!isDragging) return;
-        base.OnDrag(eventData);
-
-        if (IsConditionItemCard())
-        {
-            Debug.Log($"pnad: OnDrag");
-        }
+        transform.SetParent(transformParent);
     }
 
-    protected override void Update()
-    {
-        base.Update();
-        if (isDragging && Input.touchCount <= 0)
-        {
-            OnPointerUp();
-        }
-    }
 
-    public override void OnPointerUp(PointerEventData eventData)
-    {
-        if (!isDragging) return;
-        OnPointerUp();
-    }
+    /*  public override void OnPointerDown(PointerEventData eventData)
+     {
+         if (isAnyDragging)
+         {
+             return;
+         }
+
+         // Nếu dùng nhiều ngón tay thì cũng không cho kéo
+         if (Input.touchCount > 1)
+         {
+             return;
+         }
+
+         base.OnPointerDown(eventData);
+     }
+
+     public override void OnDrag(PointerEventData eventData)
+     {
+         if (!isDragging) return;
+         base.OnDrag(eventData);
+
+         if (IsConditionItemCard())
+         {
+             // Debug.Log($"pnad: OnDrag");
+         }
+     }
+
+     protected override void Update()
+     {
+         base.Update();
+         if (isDragging && Input.touchCount <= 0)
+         {
+             OnPointerUp();
+         }
+     }
+
+     public override void OnPointerUp(PointerEventData eventData)
+     {
+         if (!isDragging) return;
+         OnPointerUp();
+     } */
 
     private void OnPointerUp()
     {
-        if (isMergeItemCardSpawner) return;
         isDragging = false;
         isAnyDragging = false;
         if (itemCardSpawner != null)
         {
-            Move();
+            Merge();
         }
         else
         {
@@ -87,19 +93,38 @@ public class ItemCard : BaseDragObject
     public void SetSize(Vector2 size)
     {
         image.rectTransform.sizeDelta = size;
-        SetSizeBoxCol2D();
     }
 
     #region Item Card Merge Together
 
-    private void Move()
+    private void Merge()
     {
-        SetIsMergeItemCardSpawner(true);
-    }
+        // if (itemCardSpawner.isGroup)
+        // {
+        //     transform.SetParent(itemCardSpawner.itemGroupCard.transform);
+        //     itemCardSpawner.itemGroupCard.ItemCards.Add(this);
+        //     itemCardSpawner.itemGroupCard.TopCenter();
+        // }
+        // else
+        // {
+        //     GroupCardSpawner.Instance.SpawnItemGroupCard1(itemCardSpawner.transform.position, (itemGroupCard, index) =>
+        //     {
+        //         var groupTf = itemGroupCard.transform;
+        //         itemCardSpawner.transform.SetParent(groupTf);
 
-    private void SetIsMergeItemCardSpawner(bool bl)
-    {
-        isMergeItemCardSpawner = bl;
+        //         transform.SetParent(groupTf);
+
+        //         itemGroupCard.ItemCards.AddRange(new[]
+        //         {
+        //         itemCardSpawner,
+        //         this
+        //             });
+
+        //         itemGroupCard.name = $"itemGroupCard_{index}_(Id_{cardPackageID})";
+        //         itemGroupCard.TopCenter();
+        //     });
+        // }
+
     }
 
     public bool IsConditionItemCard(float extraPadding = 50f)
@@ -125,7 +150,7 @@ public class ItemCard : BaseDragObject
             rect.yMax += extraPadding;
 
             if (rect.Contains(targetRect.InverseTransformPoint(transform.position))
-                && !spawner.isMergeItemCardSpawner)
+                && spawner.cardPackageID == cardPackageID)
             {
                 itemCardSpawner = spawner;
                 return true;
@@ -133,6 +158,21 @@ public class ItemCard : BaseDragObject
         }
 
         return false;
+    }
+
+    public void OnOffRaycastTarget(bool bl)
+    {
+        image.raycastTarget = bl;
+    }
+
+    public void SetIsGroup(bool bl)
+    {
+        isGroup = bl;
+    }
+
+    public void SetItemGroupCard(ItemGroupCard itemGroupCard)
+    {
+        this.itemGroupCard = itemGroupCard;
     }
 
 
