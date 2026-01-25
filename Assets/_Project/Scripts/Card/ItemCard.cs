@@ -25,8 +25,7 @@ public class ItemCard : BaseDragObject
 
         Debug.Log($"pnad: {item.name}");
         }
-        // ItemGroupCard itemGroupCard = GroupCardSpawner.Instance.ItemGroupCardMove();
-        // transform
+       
     }
     public void SetParentItemCard(Transform transformParent)
     {
