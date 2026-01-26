@@ -9,28 +9,67 @@ public class ItemCard : BaseDragObject
     private int cardPackageID;
     [SerializeField]
     private int cardID;
-    public int CardID => cardID;
+    public int CardID
+    {
+        get => cardID;
+        set => cardID = value;
+    }
     [SerializeField]
     private ItemCard itemCardSpawner;
     [SerializeField]
     private ItemGroupCard itemGroupCard;
+    public ItemGroupCard ItemGroupCard => itemGroupCard;
     [SerializeField]
     private bool isGroup;
     public bool IsGroup => isGroup;
 
     public override void OnPointerDown(PointerEventData eventData)
     {
-        foreach (var item in itemGroupCard.SameCardType())
-        {
-
-        Debug.Log($"pnad: {item.name}");
-        }
-       
+        GameAction.OnMergeItemCard?.Invoke(itemGroupCard);
+        GameAction.OnPointerDownItemCard?.Invoke(eventData);
     }
+
+    public override void OnDrag(PointerEventData eventData)
+    {
+        GameAction.OnDragItemCard?.Invoke(eventData);
+    }
+
+    public override void OnPointerUp(PointerEventData eventData)
+    {
+        GameAction.OnPointerUpItemCard?.Invoke(eventData);
+    }
+
     public void SetParentItemCard(Transform transformParent)
     {
         transform.SetParent(transformParent);
     }
+
+    public void SetGroupCar(ItemGroupCard itemGroupCard)
+    {
+        SetParentItemCard(itemGroupCard.transform);
+        itemGroupCard.AddItemCard(this);
+    }
+
+    public void SetGroupCarMoveOff()
+    {
+        SetParentItemCard(itemGroupCard.transform);
+        itemGroupCard.AddItemCard(this);
+        OnOffRaycastTarget(true);
+    }
+
+    public void SetMergeGroupCar(ItemGroupCard itemGroupCard)
+    {
+        SetGroupCar(itemGroupCard);
+        OnOffRaycastTarget(true);
+    }
+
+    public bool IsSameCard(ItemCard other)
+    {
+        return other != null && cardID == other.cardID;
+    }
+
+
+
 
 
     /*  public override void OnPointerDown(PointerEventData eventData)
@@ -75,19 +114,19 @@ public class ItemCard : BaseDragObject
          OnPointerUp();
      } */
 
-    private void OnPointerUp()
-    {
-        isDragging = false;
-        isAnyDragging = false;
-        if (itemCardSpawner != null)
-        {
-            Merge();
-        }
-        else
-        {
-            EffectUp();
-        }
-    }
+    /*  private void OnPointerUp()
+     {
+         isDragging = false;
+         isAnyDragging = false;
+         if (itemCardSpawner != null)
+         {
+             Merge();
+         }
+         else
+         {
+             EffectUp();
+         }
+     } */
 
     public void SetSize(Vector2 size)
     {
@@ -171,6 +210,7 @@ public class ItemCard : BaseDragObject
 
     public void SetItemGroupCard(ItemGroupCard itemGroupCard)
     {
+        // if (this.itemGroupCard != null) return;
         this.itemGroupCard = itemGroupCard;
     }
 

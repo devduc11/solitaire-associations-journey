@@ -19,23 +19,24 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
     }
 
     public int index;
-    // public int indexPos;
+    public int indexPos;
 
     public void SpawnItemCard()
     {
         if (GroupCardSpawner.Instance.GroupContainsCards().Count == 0) return;
-
+        index++;
         ItemCard itemCard = Spawn(transform.position, true);
-        ItemGroupCard itemGroupCard = GroupCardSpawner.Instance.GroupContainsCards()[index];
-        itemCard.name = $"itemCard_{index}";
+        ItemGroupCard itemGroupCard = GroupCardSpawner.Instance.GroupContainsCards()[indexPos];
+        itemCard.name = $"itemCard_(Pos_{indexPos})_(Id_{index})";
+        itemCard.CardID = index;
         RectTransform rectItemPosCard = PosCard.Instance.SizeImgItemPosCard();
         Vector2 size = new Vector2(rectItemPosCard.rect.width, rectItemPosCard.rect.height);
         itemCard.SetSize(size);
-        itemCard.transform.SetParent(itemGroupCard.transform);
+        itemCard.SetGroupCar(itemGroupCard);
+        // itemCard.SetParentItemCard(itemGroupCard.transform);
+        // itemGroupCard.AddItemCard(itemCard);
         itemCards.Add(itemCard);
 
-        itemGroupCard.AddItemCard(itemCard);
-        
     }
 
     /*  public void SpawnItemCard()

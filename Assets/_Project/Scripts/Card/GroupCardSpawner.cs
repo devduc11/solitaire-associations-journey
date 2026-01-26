@@ -18,17 +18,17 @@ public class GroupCardSpawner : BaseSpawner<GroupCardSpawner, ItemGroupCard>
     }
     public int index = -1;
 
-    public void SpawnItemGroupCard1(Vector2 position, Action<ItemGroupCard, int> action = null)
-    {
-        index++;
-        ItemGroupCard itemGroupCard = Spawn(position, true);
-        itemGroupCard.transform.SetParent(CardSpawner.Instance.transform);
-        RectTransform rectItemPosCard = PosCard.Instance.SizeImgItemPosCard();
-        Vector2 size = new Vector2(rectItemPosCard.rect.width, rectItemPosCard.rect.height);
-        itemGroupCard.SetSizeGroup(size);
-        action?.Invoke(itemGroupCard, index);
-        // cardManager.AddCardBase(itemGroupCard);
-    }
+    // public void SpawnItemGroupCard1(Vector2 position, Action<ItemGroupCard, int> action = null)
+    // {
+    //     index++;
+    //     ItemGroupCard itemGroupCard = Spawn(position, true);
+    //     itemGroupCard.transform.SetParent(CardSpawner.Instance.transform);
+    //     RectTransform rectItemPosCard = PosCard.Instance.SizeImgItemPosCard();
+    //     Vector2 size = new Vector2(rectItemPosCard.rect.width, rectItemPosCard.rect.height);
+    //     itemGroupCard.SetSizeGroup(size);
+    //     action?.Invoke(itemGroupCard, index);
+    //     // cardManager.AddCardBase(itemGroupCard);
+    // }
 
     int max = 4;
     int showCount = 0;
@@ -57,6 +57,12 @@ public class GroupCardSpawner : BaseSpawner<GroupCardSpawner, ItemGroupCard>
     public ItemGroupCard ItemGroupCardMove()
     {
         return itemGroupCards[itemGroupCards.Count - 1];
+    }
+
+    public void ActiveItemGroupCardMove(bool bl)
+    {
+        ItemGroupCardMove().gameObject.SetActive(bl);
+        ItemGroupCardMove().ItemCards.Clear();
     }
 
     public List<ItemGroupCard> GroupContainsCards()

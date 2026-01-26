@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 using DG.Tweening;
 using Teo.AutoReference;
 using DBD.BaseGame;
+using System;
 
 public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
@@ -111,7 +112,7 @@ public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandl
         return 1f;
     }
 
-    public virtual void EffectUp()
+    public virtual void EffectUp(Action endAction = null)
     {
         float z = transform.position.z; // GIỮ Z HIỆN TẠI
 
@@ -130,6 +131,7 @@ public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandl
         sequence.OnComplete(() =>
         {
             OnOffCol2D(true);
+            endAction?.Invoke();
         });
     }
 
