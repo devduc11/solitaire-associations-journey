@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using DBD.BaseGame;
 using DG.Tweening;
+using Teo.AutoReference;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class ItemGroupCard : BaseDragObject
 {
+    [SerializeField, GetInChildren, Name("Outline")] private Image outline;
+    [SerializeField]
+    private Vector2 startSizeGroup = Vector2.zero;
     [SerializeField]
     private bool isMove;
     [SerializeField]
@@ -43,23 +48,7 @@ public class ItemGroupCard : BaseDragObject
         if (!isDragging) return;
         base.OnDrag(eventData);
 
-        if (IsConditionItemGroupCard())
-        {
-            // if (isMove && nearestItemGroupCard != null)
-            // {
-            //     // Debug.Log($"pnad: itemCards{itemCards.Count} nearestItemGroupCard {nearestItemGroupCard.name}");
-            //     nearestItemGroupCard.SetSizeGroup(rect.rect.size);
-            //     foreach (var lastCard in itemCards)
-            //     {
-            //         if (!nearestItemGroupCard.ItemCards.Contains(lastCard))
-            //         {
-            //             nearestItemGroupCard.ItemCards.Add(lastCard);
-            //         }
-            //     }
-            //     nearestItemGroupCard.ResizeParentToStack(0.25f);
-            // }
-
-        }
+        IsConditionItemGroupCard();
     }
 
     protected override void Update()
@@ -124,6 +113,7 @@ public class ItemGroupCard : BaseDragObject
         GroupCardSpawner.Instance.ActiveItemGroupCardMove(false);
         SetIsMove(false);
         nearestItemGroupCard = null;
+        GroupCardSpawner.Instance.ResetItemGroupCard();
     }
 
     public void SetIsMove(bool bl)
@@ -136,12 +126,17 @@ public class ItemGroupCard : BaseDragObject
         // Debug.Log($"pnad: {image.rectTransform.sizeDelta}");
         float temp = image.rectTransform.rect.width;
         image.rectTransform.sizeDelta = size;
+        SetSizePos(size, transform.position);
         image.pixelsPerUnitMultiplier = temp / image.rectTransform.rect.width;
+
+        if (outline.pixelsPerUnitMultiplier != 1) return;
+        outline.pixelsPerUnitMultiplier = image.pixelsPerUnitMultiplier;
     }
 
     public void OnOffRaycastTarget(bool bl)
     {
         image.raycastTarget = bl;
+        ShowOutline(bl);
     }
 
 
@@ -152,12 +147,19 @@ public class ItemGroupCard : BaseDragObject
         if (isMove)
         {
             excludeItemGroupCard = itemGroupCard;
+            // foreach (ItemCard itemCardExclude in excludeItemGroupCard.itemCards)
+            // {
+            //     if (itemCardExclude.CardID == itemCard.CardID)
+            //     {
+            //         RemoveItemCards(itemCardExclude);
+            //     }
+            // }
         }
     }
 
+    float overlapRatio = 0.25f;
     public void TopCenter(bool isMove = false)
     {
-        float overlapRatio = 0.25f;
 
         for (int i = 0; i < itemCards.Count; i++)
         {
@@ -172,8 +174,9 @@ public class ItemGroupCard : BaseDragObject
         ResizeParentToStack(overlapRatio);
     }
 
-    public static void SetTopCenter(RectTransform rt, int index, float overlapRatio)
+    public static void SetTopCenter(RectTransform rt, int index, float overlapRatio, float duration = 0.25f)
     {
+        rt.parent.SetAsLastSibling(); //ĐƯA ITEM LÊN TRÊN CÙNG
         rt.anchorMin = new Vector2(0.5f, 1f);
         rt.anchorMax = new Vector2(0.5f, 1f);
         rt.pivot = new Vector2(0.5f, 0.5f);
@@ -181,8 +184,25 @@ public class ItemGroupCard : BaseDragObject
         float height = rt.rect.height;
         float y = -height * 0.5f - height * overlapRatio * index;
 
-        rt.anchoredPosition = new Vector2(0f, y);
+        // Kill tween cũ để tránh giật
+        rt.DOKill();
+
+        // Tween vị trí
+        rt.DOAnchorPos(new Vector2(0f, y), duration)
+          .SetEase(Ease.OutQuad);
     }
+
+    // public static void SetTopCenter(RectTransform rt, int index, float overlapRatio)
+    // {
+    //     rt.anchorMin = new Vector2(0.5f, 1f);
+    //     rt.anchorMax = new Vector2(0.5f, 1f);
+    //     rt.pivot = new Vector2(0.5f, 0.5f);
+
+    //     float height = rt.rect.height;
+    //     float y = -height * 0.5f - height * overlapRatio * index;
+
+    //     rt.anchoredPosition = new Vector2(0f, y);
+    // }
 
     void ResizeParentToStack(float overlapRatio)
     {
@@ -218,28 +238,63 @@ public class ItemGroupCard : BaseDragObject
         parent.position += new Vector3(0f, delta, 0f);
     }
 
-    public List<ItemCard> SameCardTypes()
+    public List<ItemCard> SameCardTypes(bool isGold)
     {
-        List<ItemCard> result = new List<ItemCard>();
+        List<ItemCard> result = new();
 
         if (itemCards.Count == 0)
             return result;
 
-        int targetID = itemCards[itemCards.Count - 1].CardID;
+        // Trường hợp Gold: chỉ lấy 1 lá trên cùng
+        if (isGold)
+        {
+            ItemCard top = itemCards[^1];
+            result.Add(top);
+            RemoveItemCards(top);
+            return result;
+        }
 
+        int targetID = itemCards[^1].CardID;
+
+        // Duyệt từ trên xuống, nhưng chỉ REMOVE sau
         for (int i = itemCards.Count - 1; i >= 0; i--)
         {
-            if (itemCards[i].CardID == targetID)
-            {
-                result.Add(itemCards[i]);
-                RemoveItemCards(itemCards[i]);
-            }
-            else
+            if (itemCards[i].CardID != targetID)
                 break;
+
+            result.Add(itemCards[i]);
         }
+
+        // Remove riêng để tránh lỗi khi loop
+        foreach (var card in result)
+            RemoveItemCards(card);
 
         return result;
     }
+
+
+    /*  public List<ItemCard> SameCardTypes()
+     {
+         List<ItemCard> result = new List<ItemCard>();
+
+         if (itemCards.Count == 0)
+             return result;
+
+         int targetID = itemCards[itemCards.Count - 1].CardID;
+
+         for (int i = itemCards.Count - 1; i >= 0; i--)
+         {
+             if (itemCards[i].CardID == targetID)
+             {
+                 result.Add(itemCards[i]);
+                 RemoveItemCards(itemCards[i]);
+             }
+             else
+                 break;
+         }
+
+         return result;
+     } */
 
     private void RemoveItemCards(ItemCard itemCard)
     {
@@ -247,6 +302,94 @@ public class ItemGroupCard : BaseDragObject
     }
 
     public bool IsConditionItemGroupCard()
+    {
+        nearestItemGroupCard = null;
+
+        RectTransform selfRect = transform as RectTransform;
+        if (selfRect == null) return false;
+
+        Rect selfWorldRect = GetWorldRect(selfRect);
+
+        float maxOverlapArea = 0f;
+
+        foreach (var spawner in GroupCardSpawner.Instance.GroupContainsCards())
+        {
+            if (spawner == this || spawner == excludeItemGroupCard)
+                continue;
+
+            RectTransform targetRect = spawner.transform as RectTransform;
+            if (targetRect == null)
+                continue;
+
+            Rect targetWorldRect = GetWorldRect(targetRect);
+
+            // Tính overlap X
+            float overlapWidth =
+                Mathf.Min(selfWorldRect.xMax, targetWorldRect.xMax) -
+                Mathf.Max(selfWorldRect.xMin, targetWorldRect.xMin);
+
+            if (overlapWidth <= 0f)
+                continue;
+
+            // Tính overlap Y
+            float overlapHeight =
+                Mathf.Min(selfWorldRect.yMax, targetWorldRect.yMax) -
+                Mathf.Max(selfWorldRect.yMin, targetWorldRect.yMin);
+
+            if (overlapHeight <= 0f)
+                continue;
+
+            // Diện tích overlap
+            float overlapArea = overlapWidth * overlapHeight;
+
+            // Lấy cái đè nhiều nhất
+            if (overlapArea > maxOverlapArea)
+            {
+                maxOverlapArea = overlapArea;
+                nearestItemGroupCard = spawner;
+            }
+        }
+
+        return nearestItemGroupCard != null;
+    }
+
+    /* public bool IsConditionItemGroupCard()
+    {
+        nearestItemGroupCard = null;
+
+        RectTransform selfRect = transform as RectTransform;
+        if (selfRect == null) return false;
+
+        Rect selfWorldRect = GetWorldRect(selfRect);
+
+        foreach (var spawner in GroupCardSpawner.Instance.GroupContainsCards())
+        {
+            if (spawner == this || spawner == excludeItemGroupCard)
+                continue;
+
+            RectTransform targetRect = spawner.transform as RectTransform;
+            if (targetRect == null)
+                continue;
+
+            Rect targetWorldRect = GetWorldRect(targetRect);
+
+            // 1️⃣ Overlap ngang (BẮT BUỘC)
+            if (!IsHorizontalOverlapEnough(selfWorldRect, targetWorldRect, 0.5f))
+                continue;
+
+            // 2️⃣ Overlap dọc (BẮT BUỘC)
+            if (!IsVerticalOverlapEnough(selfWorldRect, targetWorldRect, 0.5f))
+                continue;
+
+            nearestItemGroupCard = spawner;
+            return true;
+        }
+
+        return false;
+    } */
+
+
+    /* public bool IsConditionItemGroupCard()
     {
         nearestItemGroupCard = null;
 
@@ -280,7 +423,23 @@ public class ItemGroupCard : BaseDragObject
         }
 
         return false;
-    }
+    } */
+
+    /*  Rect GetWorldRect(RectTransform rt)
+     {
+         Vector3[] corners = new Vector3[4];
+         rt.GetWorldCorners(corners);
+
+         Vector3 bottomLeft = corners[0];
+         Vector3 topRight = corners[2];
+
+         return new Rect(
+             bottomLeft.x,
+             bottomLeft.y,
+             topRight.x - bottomLeft.x,
+             topRight.y - bottomLeft.y
+         );
+     } */
 
     Rect GetWorldRect(RectTransform rt)
     {
@@ -298,6 +457,7 @@ public class ItemGroupCard : BaseDragObject
         );
     }
 
+
     bool IsHorizontalOverlapEnough(Rect a, Rect b, float requiredRatio)
     {
         float overlapWidth =
@@ -313,27 +473,36 @@ public class ItemGroupCard : BaseDragObject
         return ratio >= requiredRatio;
     }
 
+    bool IsVerticalOverlapEnough(Rect a, Rect b, float requiredRatio)
+    {
+        float overlapHeight =
+            Mathf.Min(a.yMax, b.yMax) -
+            Mathf.Max(a.yMin, b.yMin);
+
+        if (overlapHeight <= 0f)
+            return false;
+
+        float minHeight = Mathf.Min(a.height, b.height);
+        float ratio = overlapHeight / minHeight;
+
+        return ratio >= requiredRatio;
+    }
+
+
     private void CheckMergeItemCard()
     {
         if (nearestItemGroupCard == null) return;
         if (nearestItemGroupCard.ItemCards.Count == 0)
         {
-            EffectUpMerge(nearestItemGroupCard.transform.position, () =>
-            {
-                CheckGroupCarMoveMerge();
-            });
+            CheckGroupCarMoveMerge();
         }
         else if (nearestItemGroupCard.ItemCards.Count > 0 && GetTopItemCardNearest() != null)
         {
-
             // Debug.Log($"pnad: {GetTopItemCardNearest().name}");
             // Debug.Log($"pnad: {GetTopItemCardMove().name}");
             if (GetTopItemCardNearest().IsSameCard(GetTopItemCardMove()))
             {
-                EffectUpMerge(nearestItemGroupCard.transform.position, () =>
-                {
-                    CheckGroupCarMoveMerge();
-                });
+                CheckGroupCarMoveMerge();
             }
             else
             {
@@ -357,23 +526,6 @@ public class ItemGroupCard : BaseDragObject
         });
     }
 
-    public void EffectUpMerge(Vector2 pos, Action endAction = null)
-    {
-        if (!isMove) return;
-        float z = transform.position.z; // GIỮ Z HIỆN TẠI
-
-        Sequence sequence = DOTween.Sequence();
-        sequence.Join(transform.DOMove(
-               new Vector3(pos.x, pos.y, z),
-               0.2f
-        ));
-
-        sequence.OnComplete(() =>
-      {
-          endAction?.Invoke();
-      });
-    }
-
     public ItemCard GetTopItemCardNearest()
     {
         if (nearestItemGroupCard.itemCards.Count == 0) return null;
@@ -386,5 +538,31 @@ public class ItemGroupCard : BaseDragObject
         if (itemCards.Count == 0 || !isMove) return null;
 
         return itemCards[^1]; // itemCards[itemCards.Count - 1]
+    }
+
+    public void SetSizePos(Vector2 size, Vector2 pos)
+    {
+        startSizeGroup = size;
+        startPosition = pos;
+    }
+
+    public bool isTest;
+    public void ResetSizePos()
+    {
+        if (!isMove && itemCards.Count == 0)
+        {
+            image.rectTransform.sizeDelta = startSizeGroup;
+            if (isTest) return;
+            transform.position = startPosition;
+        }
+        else
+        {
+            ResizeParentToStack(overlapRatio);
+        }
+    }
+
+    public void ShowOutline(bool bl)
+    {
+        outline.gameObject.SetActive(bl);
     }
 }

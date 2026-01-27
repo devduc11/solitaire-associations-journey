@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using DBD.BaseGame;
 using Teo.AutoReference;
 using UnityEngine;
@@ -8,10 +9,10 @@ public class CardManager : BaseMonoBehaviour
 {
     private static CardManager instance;
     public static CardManager Instance => instance;
-    // [SerializeField]
-    // private List<CardBase> cardBases = new List<CardBase>();
-    // public List<CardBase> CardBases => cardBases;
-
+    [SerializeField, FindInAssets, Path("Assets/_Project/ScriptableObject/Level/Level1.asset")]
+    private LevelScriptableObject loadLevel;
+    [SerializeField, FindInAssets, Path("Assets/_Project/ScriptableObject/DataCard.asset")]
+    private DataCard dataCard;
     protected override void Awake()
     {
         base.Awake();
@@ -24,11 +25,6 @@ public class CardManager : BaseMonoBehaviour
             Destroy(gameObject);
         }
     }
-
-    // public void AddCardBase(CardBase cardBase)
-    // {
-    //     cardBases.Add(cardBase);
-    // }
 
     protected override void OnEnable()
     {
@@ -48,13 +44,79 @@ public class CardManager : BaseMonoBehaviour
         GameAction.OnPointerUpItemCard -= PointerUpItemCard;
     }
 
-    private void MergeItemCard(ItemGroupCard itemGroupCard)
+    public void _TestLoadLv()
+    {
+        LoadLevel();
+    }
+
+    public void LoadLevel()
+    {
+        int maxColumn = loadLevel.Columns.Count;
+        GroupCardSpawner.Instance.CheckSpawnItemGroupCard(maxColumn);
+        LoadCard();
+    }
+
+    public void LoadCard()
+    {
+        List<int> typeCards = TypeCards(); // ✅ random 1 lần
+        Debug.Log($"pnad: {string.Join(", ", typeCards)}");
+        CardSpawner cardSpawner = CardSpawner.Instance;
+
+        for (int i = 0; i < typeCards.Count; i++)
+        {
+            int cardTypeIndex = typeCards[i];
+            CardPackage cardPackage = dataCard.CardPackages[cardTypeIndex];
+            CardPackageData package = loadLevel.Packages[i];
+
+            int normalCount = package.NormalCardCount;
+            // int goldCount = package.GoldCardCount;
+
+            // 👉 Spawn card thường
+            for (int n = 0; n < normalCount; n++)
+            {
+                cardSpawner.SpawnItemCard(cardPackage, false);
+            }
+            cardSpawner.SpawnItemCard(cardPackage, true); //Spawn card vàng
+
+            // // 👉 Spawn card vàng
+            // for (int g = 0; g < goldCount; g++)
+            // {
+            // }
+        }
+        cardSpawner.CheckGroup(loadLevel.Columns);
+    }
+
+    public List<int> TypeCards()
+    {
+        // int count = loadLevel.Packages.Count;
+
+        // List<int> pool = new List<int>();
+        // for (int i = 0; i < dataCard.CardPackages.Count; i++)
+        // {
+        //     pool.Add(i);
+        // }
+
+        // // Shuffle
+        // for (int i = 0; i < pool.Count; i++)
+        // {
+        //     int rand = Random.Range(i, pool.Count);
+        //     (pool[i], pool[rand]) = (pool[rand], pool[i]);
+        // }
+
+        // // Lấy count phần tử đầu
+        // return pool.GetRange(0, count);
+        return new List<int> { 0, 1 };
+
+    }
+
+
+    private void MergeItemCard(ItemGroupCard itemGroupCard, ItemCard itemCard)
     {
         var spawner = GroupCardSpawner.Instance;
         spawner.ActiveItemGroupCardMove(true);
 
         var moveGroup = spawner.ItemGroupCardMove();
-        var cards = itemGroupCard.SameCardTypes();
+        var cards = itemGroupCard.SameCardTypes(itemCard.IsGold);
 
         var lastCard = cards[^1]; // cards[cards.Count - 1]
         moveGroup.SetSizeGroup(lastCard.rect.rect.size);

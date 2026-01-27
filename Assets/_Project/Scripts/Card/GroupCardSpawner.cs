@@ -16,32 +16,26 @@ public class GroupCardSpawner : BaseSpawner<GroupCardSpawner, ItemGroupCard>
     {
         return itemGroupCardPrefab;
     }
-    public int index = -1;
 
-    // public void SpawnItemGroupCard1(Vector2 position, Action<ItemGroupCard, int> action = null)
-    // {
-    //     index++;
-    //     ItemGroupCard itemGroupCard = Spawn(position, true);
-    //     itemGroupCard.transform.SetParent(CardSpawner.Instance.transform);
-    //     RectTransform rectItemPosCard = PosCard.Instance.SizeImgItemPosCard();
-    //     Vector2 size = new Vector2(rectItemPosCard.rect.width, rectItemPosCard.rect.height);
-    //     itemGroupCard.SetSizeGroup(size);
-    //     action?.Invoke(itemGroupCard, index);
-    //     // cardManager.AddCardBase(itemGroupCard);
-    // }
-
-    int max = 4;
+    int maxColumn = 4;
     int showCount = 0;
+
+    public void CheckSpawnItemGroupCard(int maxColumn)
+    {
+        this.maxColumn = maxColumn;
+        SpawnItemGroupCard();
+    }
 
     public void SpawnItemGroupCard()
     {
         if (itemGroupCards.Count > 0) return;
-        showCount = max - 1;
+        maxColumn = maxColumn + 1;
+        showCount = maxColumn - 1;
 
         RectTransform rect = PosCard.Instance.SizeImgItemPosCard();
         Vector2 size = rect.rect.size;
 
-        for (int i = 0; i < max; i++)
+        for (int i = 0; i < maxColumn; i++)
         {
             bool isShow = i < showCount;
             Vector2 pos = isShow ? Pos(i).position : transform.position;
@@ -49,7 +43,8 @@ public class GroupCardSpawner : BaseSpawner<GroupCardSpawner, ItemGroupCard>
             ItemGroupCard itemGroupCard = Spawn(pos, isShow);
             itemGroupCard.SetSizeGroup(size);
             itemGroupCard.OnOffRaycastTarget(!isShow);
-            itemGroupCard.name = $"itemGroupCard_{i}";
+            string name = !isShow ? "Move" : $"{i}";
+            itemGroupCard.name = $"itemGroupCard_{name}";
             itemGroupCards.Add(itemGroupCard);
         }
     }
@@ -79,11 +74,17 @@ public class GroupCardSpawner : BaseSpawner<GroupCardSpawner, ItemGroupCard>
         return result;
     }
 
-
-
     private RectTransform Pos(int index)
     {
         return PosCard.Instance.PosItemPosCard(index);
+    }
+
+    public void ResetItemGroupCard()
+    {
+        foreach (var itemGroupCard in GroupContainsCards())
+        {
+            itemGroupCard.ResetSizePos();
+        }
     }
 
 

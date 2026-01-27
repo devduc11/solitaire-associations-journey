@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 160b828d46b080446ba567d997ef02c7, type: 3}
+  m_Name: DataCard
+  m_EditorClassIdentifier: 
+  CardPackages:
+  - NameCardPackage: Emoji
+    IDCardPackage: 0
+    SpriteCardType:
+    - {fileID: 21300000, guid: f0932b4868c1d724fb556d0fe941c248, type: 3}
+    - {fileID: 21300000, guid: e8f204ab47740484c87a83116ccb7a30, type: 3}
+    - {fileID: 21300000, guid: f1eae4661f9e34a4e8f27e07c13a2d41, type: 3}
+    - {fileID: 21300000, guid: 0e066d9229a443c44acf95c7b3e670ff, type: 3}
+    - {fileID: 21300000, guid: 7bc4659c06c458346adcde60262e8f13, type: 3}
+    - {fileID: 21300000, guid: c7e734bc09be142478741e806e00adf1, type: 3}
+    - {fileID: 21300000, guid: 762b10ce52d21ad4b83af5602986ef03, type: 3}
+    - {fileID: 21300000, guid: bebfe6529667ea441a5098b31d9bdbc1, type: 3}
+    NameType: []
+  - NameCardPackage: Map
+    IDCardPackage: 1
+    SpriteCardType:
+    - {fileID: 21300000, guid: a6d1e04b6210d064c87135b702173503, type: 3}
+    - {fileID: 21300000, guid: 202ba2951ce90c14f8411152aaa9f00a, type: 3}
+    - {fileID: 21300000, guid: 70b497e3c2b54f64e95e21bf47932871, type: 3}
+    - {fileID: 21300000, guid: 48eb8cee1ee39364ca46277299dcc7ba, type: 3}
+    - {fileID: 21300000, guid: 4d77ab89cc08e4344bce99ad451ef409, type: 3}
+    - {fileID: 21300000, guid: 56d03ef828ef3f6499cbd5c674936f11, type: 3}
+    - {fileID: 21300000, guid: 5d99d10fc04fd3f46908da73020b0335, type: 3}
+    - {fileID: 21300000, guid: 32326108c77ab204ba384576bd58800d, type: 3}
+    NameType: []
+  - NameCardPackage: Animal
+    IDCardPackage: 2
+    SpriteCardType: []
+    NameType:
+    - Dog
+    - Cat
+    - Elephan
+    - Lion
+    - Tiger
+    - Monkey
+    - Horse
+    - Cow
+    - Pig
+    - Bird
+  - NameCardPackage: Fruit
+    IDCardPackage: 3
+    SpriteCardType: []
+    NameType:
+    - Apple
+    - Banana
+    - Orange
+    - Mango
+    - Grape
+    - Pineapple
+    - Watermelon
+    - Strawberry
+    - Papaya
+    - Peach

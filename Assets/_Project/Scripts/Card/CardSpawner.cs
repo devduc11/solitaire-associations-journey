@@ -21,7 +21,30 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
     public int index;
     public int indexPos;
 
-    public void SpawnItemCard()
+    public void SpawnItemCard(CardPackage cardPackage, bool isGold)
+    {
+        if (GroupCardSpawner.Instance.GroupContainsCards().Count == 0) return;
+        ItemCard itemCard = Spawn(transform.position, true);
+        int index = isGold ? 1 : (cardPackage.SpriteCardType.Count > 0 ? 0 : 1);
+        itemCard.ShowSpriteOrName(index);
+        itemCard.IsGold = isGold;
+        itemCard.CardID = cardPackage.IDCardPackage;
+        itemCard.name = $"itemCard_{cardPackage.NameCardPackage}";
+        RectTransform rectItemPosCard = PosCard.Instance.SizeImgItemPosCard();
+        Vector2 size = new Vector2(rectItemPosCard.rect.width, rectItemPosCard.rect.height);
+        itemCard.SetSize(size);
+        itemCards.Add(itemCard);
+    }
+
+    public void CheckGroup( List<int> columns)
+    {
+        foreach (var column in columns)
+        {
+            
+        }
+    }
+
+    public void SpawnItemCardTest()
     {
         if (GroupCardSpawner.Instance.GroupContainsCards().Count == 0) return;
         index++;
@@ -38,19 +61,4 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
         itemCards.Add(itemCard);
 
     }
-
-    /*  public void SpawnItemCard()
-     {
-         ItemCard itemCard = Spawn(PosItemCard().position, true);
-         itemCard.name = $"itemCard_{indexPos}";
-         RectTransform rectItemPosCard = PosCard.Instance.SizeImgItemPosCard();
-         Vector2 size = new Vector2(rectItemPosCard.rect.width, rectItemPosCard.rect.height);
-         itemCard.SetSize(size);
-         itemCards.Add(itemCard);
-     }  */
-
-    // private RectTransform PosItemCard()
-    // {
-    //     return PosCard.Instance.PosItemPosCard(indexPos);
-    // }
 }
