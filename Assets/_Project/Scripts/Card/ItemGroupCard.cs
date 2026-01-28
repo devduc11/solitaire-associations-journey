@@ -76,14 +76,27 @@ public class ItemGroupCard : BaseDragObject
         }
         else
         {
-            EffectUp(() =>
-            {
-                CheckGroupCarMoveOff();
-            });
+            CheckEffectUp();
         }
     }
 
-    private void CheckGroupCarMoveOff()
+    public void CheckEffectUp()
+    {
+        EffectUp(() =>
+        {
+            if (IsNoGroupCardMove())
+            {
+                Debug.Log($"pnad: 1111111111111111111111111111");
+                
+            }
+            else
+            {
+                CheckGroupCarMoveOff();
+            }
+        });
+    }
+
+    private void CheckGroupCarMoveOff() 
     {
         ActionGroupCardMove(() =>
         {
@@ -114,6 +127,18 @@ public class ItemGroupCard : BaseDragObject
         SetIsMove(false);
         nearestItemGroupCard = null;
         GroupCardSpawner.Instance.ResetItemGroupCard();
+    }
+
+    private bool IsNoGroupCardMove()
+    {
+        if (isMove)
+        {
+            foreach (var itemCard in itemCards)
+            {
+                if (!itemCard.IsGroup) return true;
+            }
+        }
+        return false;
     }
 
     public void SetIsMove(bool bl)
@@ -174,7 +199,7 @@ public class ItemGroupCard : BaseDragObject
         ResizeParentToStack(overlapRatio);
     }
 
-    public static void SetTopCenter(RectTransform rt, int index, float overlapRatio, float duration = 0.25f)
+    public void SetTopCenter(RectTransform rt, int index, float overlapRatio, float duration = 0.25f)
     {
         rt.parent.SetAsLastSibling(); //ĐƯA ITEM LÊN TRÊN CÙNG
         rt.anchorMin = new Vector2(0.5f, 1f);
@@ -506,10 +531,7 @@ public class ItemGroupCard : BaseDragObject
             }
             else
             {
-                EffectUp(() =>
-                {
-                    CheckGroupCarMoveOff();
-                });
+                CheckEffectUp();
             }
 
         }

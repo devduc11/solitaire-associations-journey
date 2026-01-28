@@ -13,6 +13,8 @@ public class CardManager : BaseMonoBehaviour
     private LevelScriptableObject loadLevel;
     [SerializeField, FindInAssets, Path("Assets/_Project/ScriptableObject/DataCard.asset")]
     private DataCard dataCard;
+    [SerializeField, GetInChildren]
+    private NoGroupManager noGroupManager;
     protected override void Awake()
     {
         base.Awake();
@@ -105,7 +107,7 @@ public class CardManager : BaseMonoBehaviour
 
         // // Lấy count phần tử đầu
         // return pool.GetRange(0, count);
-        return new List<int> { 0, 1 };
+        return new List<int> { 0, 1, 2 };
 
     }
 
@@ -116,7 +118,15 @@ public class CardManager : BaseMonoBehaviour
         spawner.ActiveItemGroupCardMove(true);
 
         var moveGroup = spawner.ItemGroupCardMove();
-        var cards = itemGroupCard.SameCardTypes(itemCard.IsGold);
+
+        List<ItemCard> itemCardNoGroups = new List<ItemCard>();
+        if (!itemCard.IsGroup)
+        {
+            itemCardNoGroups.Add(noGroupManager.ItemCardNoGroup());
+        }
+
+        // var cards = itemGroupCard.SameCardTypes(itemCard.IsGold);
+        var cards = !itemCard.IsGroup ? itemCardNoGroups : itemGroupCard.SameCardTypes(itemCard.IsGold);
 
         var lastCard = cards[^1]; // cards[cards.Count - 1]
         moveGroup.SetSizeGroup(lastCard.rect.rect.size);

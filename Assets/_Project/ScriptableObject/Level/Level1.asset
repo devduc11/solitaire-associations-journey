@@ -15,5 +15,6 @@ MonoBehaviour:
   Moves: 100
   Packages:
   - NormalCardCount: 2
-  - NormalCardCount: 2
-  Columns: 010000000100000001000000
+  - NormalCardCount: 3
+  - NormalCardCount: 3
+  Columns: 010000000200000003000000

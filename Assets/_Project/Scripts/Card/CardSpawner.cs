@@ -7,11 +7,17 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
 {
     [SerializeField, FindInAssets, Path("Assets/_Project/Prefab/Item/ItemCard.prefab")]
     private ItemCard itemCardPrefab;
-    [SerializeField, GetInParent]
-    private CardManager cardManager;
+    [SerializeField, GetInChildren]
+    private NoGroupManager noGroupManager;
+    // [SerializeField, GetInChildren, Name("NoGroupManager")]
+    // private RectTransform noGroupRect;
     [SerializeField]
     private List<ItemCard> itemCards = new List<ItemCard>();
-    public List<ItemCard> ItemCards => itemCards;
+
+    [SerializeField]
+    private List<ItemCard> noGroupItemCards = new List<ItemCard>();
+    public List<ItemCard> NoGroupItemCards => noGroupItemCards;
+
 
     protected override ItemCard GetPrefab()
     {
@@ -33,32 +39,131 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
         RectTransform rectItemPosCard = PosCard.Instance.SizeImgItemPosCard();
         Vector2 size = new Vector2(rectItemPosCard.rect.width, rectItemPosCard.rect.height);
         itemCard.SetSize(size);
+        itemCard.OnOffRaycastTarget(false);
+        noGroupManager.SetSize(size);
+        LoadDataCard(index, cardPackage, itemCard);
         itemCards.Add(itemCard);
     }
 
-    public void CheckGroup( List<int> columns)
+    private void LoadDataCard(int index, CardPackage cardPackage, ItemCard itemCard)
     {
-        foreach (var column in columns)
+        if (index == 0)
         {
-            
+            List<Sprite> sprites = new List<Sprite>(cardPackage.SpriteCardType);
+            if (sprites.Count == 0) return;
+
+            ShuffleList(sprites);
+            Sprite selectedSprite = sprites[0];
+
+            foreach (var spriteData in sprites)
+            {
+                bool isUsed = false;
+                foreach (var card in itemCards)
+                {
+                    if (card.CardID == cardPackage.IDCardPackage && card.SpriteCards.Count > 0 && card.SpriteCards[0].sprite == spriteData)
+                    {
+                        isUsed = true;
+                        break;
+                    }
+                }
+
+                if (!isUsed)
+                {
+                    selectedSprite = spriteData;
+                    break;
+                }
+            }
+
+            itemCard.SetSpriteCards(selectedSprite);
+        }
+        else if (index == 1 && !itemCard.IsGold)
+        {
+            List<string> names = new List<string>(cardPackage.NameType);
+            if (names.Count == 0) return;
+
+            ShuffleList(names);
+
+            string selectedName = names[0];
+            foreach (var nameData in names)
+            {
+                bool isUsed = false;
+                foreach (var card in itemCards)
+                {
+                    if (card.CardID == cardPackage.IDCardPackage && card.NameTypes.Count > 0 && card.NameTypes[0].text == nameData)
+                    {
+                        isUsed = true;
+                        break;
+                    }
+                }
+
+                if (!isUsed)
+                {
+                    selectedName = nameData;
+                    break;
+                }
+            }
+
+            itemCard.SetNameTypes(selectedName);
+        }
+        else if (itemCard.IsGold)
+        {
+            itemCard.SetNameTypes(cardPackage.NameCardPackage);
         }
     }
 
-    public void SpawnItemCardTest()
+    public void CheckGroup(List<int> columns)
     {
-        if (GroupCardSpawner.Instance.GroupContainsCards().Count == 0) return;
-        index++;
-        ItemCard itemCard = Spawn(transform.position, true);
-        ItemGroupCard itemGroupCard = GroupCardSpawner.Instance.GroupContainsCards()[indexPos];
-        itemCard.name = $"itemCard_(Pos_{indexPos})_(Id_{index})";
-        itemCard.CardID = index;
-        RectTransform rectItemPosCard = PosCard.Instance.SizeImgItemPosCard();
-        Vector2 size = new Vector2(rectItemPosCard.rect.width, rectItemPosCard.rect.height);
-        itemCard.SetSize(size);
-        itemCard.SetGroupCar(itemGroupCard);
-        // itemCard.SetParentItemCard(itemGroupCard.transform);
-        // itemGroupCard.AddItemCard(itemCard);
-        itemCards.Add(itemCard);
+        ShuffleList(itemCards);
+        List<ItemGroupCard> itemGroupCards = GroupCardSpawner.Instance.GroupContainsCards();
+        int cardIndex = 0;
 
+        for (int i = 0; i < columns.Count; i++)
+        {
+            if (i >= itemGroupCards.Count) break;
+
+            int sumCard = columns[i]; // tổng số thẻ có trong mỗi cột
+            ItemGroupCard group = itemGroupCards[i];
+
+            for (int j = 0; j < sumCard; j++)
+            {
+                if (cardIndex < itemCards.Count)
+                {
+                    ItemCard itemCard = itemCards[cardIndex];
+                    itemCard.SetGroupCar(group);
+                    cardIndex++;
+                }
+            }
+        }
+
+        AllItemCardNoGroup();
+    }
+
+    private void ShuffleList<T>(List<T> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            int randomIndex = UnityEngine.Random.Range(i, list.Count);
+            (list[i], list[randomIndex]) = (list[randomIndex], list[i]);
+        }
+    }
+
+    public void AllItemCardNoGroup()
+    {
+        foreach (var itemCard in itemCards)
+        {
+            if (!itemCard.IsGroup)
+            {
+                itemCard.gameObject.SetActive(false);
+                // itemCard.transform.SetParent(noGroupRect);
+                noGroupItemCards.Add(itemCard);
+            }
+        }
+        noGroupManager.gameObject.SetActive(true);
+    }
+
+    public void ResetListItemCard()
+    {
+        itemCards.Clear();
+        noGroupItemCards.Clear();
     }
 }

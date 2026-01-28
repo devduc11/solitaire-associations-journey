@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DataCard
   m_EditorClassIdentifier: 
   CardPackages:
-  - NameCardPackage: Emoji
+  - NameCardPackage: EMOJI
     IDCardPackage: 0
     SpriteCardType:
     - {fileID: 21300000, guid: f0932b4868c1d724fb556d0fe941c248, type: 3}
@@ -25,7 +25,7 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 762b10ce52d21ad4b83af5602986ef03, type: 3}
     - {fileID: 21300000, guid: bebfe6529667ea441a5098b31d9bdbc1, type: 3}
     NameType: []
-  - NameCardPackage: Map
+  - NameCardPackage: MAP
     IDCardPackage: 1
     SpriteCardType:
     - {fileID: 21300000, guid: a6d1e04b6210d064c87135b702173503, type: 3}
@@ -37,7 +37,7 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 5d99d10fc04fd3f46908da73020b0335, type: 3}
     - {fileID: 21300000, guid: 32326108c77ab204ba384576bd58800d, type: 3}
     NameType: []
-  - NameCardPackage: Animal
+  - NameCardPackage: ANIMAL
     IDCardPackage: 2
     SpriteCardType: []
     NameType:
@@ -51,7 +51,7 @@ MonoBehaviour:
     - Cow
     - Pig
     - Bird
-  - NameCardPackage: Fruit
+  - NameCardPackage: FRUIT
     IDCardPackage: 3
     SpriteCardType: []
     NameType:

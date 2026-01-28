@@ -17,7 +17,7 @@ public class GroupCardSpawner : BaseSpawner<GroupCardSpawner, ItemGroupCard>
         return itemGroupCardPrefab;
     }
 
-    int maxColumn = 4;
+    int maxColumn = 0;
     int showCount = 0;
 
     public void CheckSpawnItemGroupCard(int maxColumn)

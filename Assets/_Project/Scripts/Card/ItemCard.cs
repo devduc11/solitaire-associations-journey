@@ -1,7 +1,12 @@
+using System;
+using System.Collections.Generic;
 using DBD.BaseGame;
+using DG.Tweening;
 using Teo.AutoReference;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class ItemCard : BaseDragObject
 {
@@ -14,12 +19,22 @@ public class ItemCard : BaseDragObject
     }
 
     [SerializeField]
+    private bool isGroup;
+    public bool IsGroup
+    {
+        get => isGroup;
+        set => isGroup = value;
+    }
+
+    [SerializeField]
     private int cardID;
     public int CardID
     {
         get => cardID;
         set => cardID = value;
     }
+
+    public int slotIndex;
 
     [SerializeField]
     private ItemGroupCard itemGroupCard;
@@ -29,6 +44,18 @@ public class ItemCard : BaseDragObject
     private GameObject spriteCardObj;
     [SerializeField, GetInChildren, Name("NameTypeObj")]
     private GameObject nameTypeObj;
+    [SerializeField, GetInChildren, Name("SpriteCardTypeS", "SpriteCardTypeL")]
+    private List<Image> spriteCards = new List<Image>();
+    public List<Image> SpriteCards => spriteCards;
+    [SerializeField, GetInChildren, Name("NameTypeS", "NameTypeL")]
+    private List<TextMeshProUGUI> nameTypes = new List<TextMeshProUGUI>();
+    public List<TextMeshProUGUI> NameTypes => nameTypes;
+
+    protected override void Start()
+    {
+        base.Start();
+        startPosition = transform.position;
+    }
 
     public override void OnPointerDown(PointerEventData eventData)
     {
@@ -55,6 +82,7 @@ public class ItemCard : BaseDragObject
     {
         SetParentItemCard(itemGroupCard.transform);
         itemGroupCard.AddItemCard(this);
+        SetIsGroup(true);
     }
 
     public void SetGroupCarMoveOff()
@@ -95,6 +123,40 @@ public class ItemCard : BaseDragObject
     {
         spriteCardObj.SetActive(index == 0);
         nameTypeObj.SetActive(index == 1);
+    }
+
+    public void SetSpriteCards(Sprite sprite)
+    {
+        foreach (var spriteCard in spriteCards)
+        {
+            spriteCard.sprite = sprite;
+            // spriteCard.SetNativeSize();
+        }
+    }
+
+    public void SetNameTypes(string name)
+    {
+        foreach (var nameType in nameTypes)
+        {
+            nameType.text = name;
+        }
+    }
+
+    public void SetIsGroup(bool bl)
+    {
+        isGroup = bl;
+    }
+
+    public void MoveNoGroup(Action endAction = null)
+    {
+        slotIndex = -1;
+        transform.DOMove(startPosition, 0.15f)
+           .SetEase(Ease.OutCubic)
+           .OnComplete(() =>
+           {
+               gameObject.SetActive(false);
+               endAction?.Invoke();
+           });
     }
 
 }
