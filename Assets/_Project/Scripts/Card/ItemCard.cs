@@ -34,7 +34,13 @@ public class ItemCard : BaseDragObject
         set => cardID = value;
     }
 
-    public int slotIndex;
+    [SerializeField]
+    private int slotIndex;
+    public int SlotIndex
+    {
+        get => slotIndex;
+        set => slotIndex = value;
+    }
 
     [SerializeField]
     private ItemGroupCard itemGroupCard;
@@ -96,15 +102,12 @@ public class ItemCard : BaseDragObject
     {
         SetParentItemCard(itemGroupCard.transform);
         itemGroupCard.AddItemCard(this);
-        // OnOffRaycastTarget(true);
     }
 
     public void SetMergeGroupCar(ItemGroupCard itemGroupCard)
     {
-        // SetIsGroup(true);
         SetParentItemCard(itemGroupCard.transform);
         itemGroupCard.AddItemCard(this, isGroup: isGroup);
-        // OnOffRaycastTarget(true);
     }
 
     public void SetMergeNoGroupCar(ItemGroupCard itemGroupCard)
@@ -112,7 +115,6 @@ public class ItemCard : BaseDragObject
         SetIsGroup(true);
         SetParentItemCard(itemGroupCard.transform);
         itemGroupCard.AddItemCard(this, isGroup: isGroup);
-        // OnOffRaycastTarget(true);
     }
 
     public bool IsSameCard(ItemCard other)

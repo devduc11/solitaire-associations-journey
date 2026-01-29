@@ -179,7 +179,7 @@ public class ItemGroupCard : BaseDragObject
         outline.pixelsPerUnitMultiplier = image.pixelsPerUnitMultiplier;
     }
 
-    public void OnOffRaycastTarget(bool bl)
+    public void OnOffRaycastTargetItemGroup(bool bl)
     {
         image.raycastTarget = bl;
         ShowOutline(bl);
@@ -191,7 +191,7 @@ public class ItemGroupCard : BaseDragObject
 
         if (!isGroup && isMove)
         {
-            Debug.Log($"pnad: NoGroup");
+            // Debug.Log($"pnad: NoGroup");
             TopCenterNoGroup();
             return;
         }
@@ -201,6 +201,8 @@ public class ItemGroupCard : BaseDragObject
         {
             excludeItemGroupCard = itemGroupCard;
         }
+
+        CheckAllItemCardOnOffRaycastTarget();
     }
 
     float overlapRatio = 0.25f;
@@ -337,15 +339,35 @@ public class ItemGroupCard : BaseDragObject
             return result;
         }
 
-        int targetID = itemCards[^1].CardID;
+        int lastIndex = itemCards.Count - 1;
+        int targetID = itemCards[lastIndex].CardID;
 
-        // Duyệt từ trên xuống, nhưng chỉ REMOVE sau
-        for (int i = itemCards.Count - 1; i >= 0; i--)
+        // Duyệt từ trên xuống
+        for (int i = lastIndex; i >= 0; i--)
         {
-            if (itemCards[i].CardID != targetID)
-                break;
+            ItemCard card = itemCards[i];
 
-            result.Add(itemCards[i]);
+            // Nếu khác ID thì dừng
+            if (card.CardID != targetID) break;
+
+            if (card.IsGold)
+            {
+                if (i == lastIndex)
+                {
+                    // Thẻ Gold ở trên cùng thì lấy và cho phép xét tiếp bên dưới
+                    result.Add(card);
+                }
+                else
+                {
+                    // Thẻ Gold ở giữa hoặc dưới cùng thì dừng chuỗi tại đây
+                    break;
+                }
+            }
+            else
+            {
+                // Thẻ thường cùng ID thì lấy
+                result.Add(card);
+            }
         }
 
         // Remove riêng để tránh lỗi khi loop
@@ -354,7 +376,39 @@ public class ItemGroupCard : BaseDragObject
 
         return result;
     }
+    /*  public List<ItemCard> SameCardTypes(bool isGold)
+     {
+         List<ItemCard> result = new();
 
+         if (itemCards.Count == 0)
+             return result;
+
+         // Trường hợp Gold: chỉ lấy 1 lá trên cùng
+         if (isGold)
+         {
+             ItemCard top = itemCards[^1];
+             result.Add(top);
+             RemoveItemCards(top);
+             return result;
+         }
+
+         int targetID = itemCards[^1].CardID;
+
+         // Duyệt từ trên xuống, nhưng chỉ REMOVE sau
+         for (int i = itemCards.Count - 1; i >= 0; i--)
+         {
+             if (itemCards[i].CardID != targetID)
+                 break;
+
+             result.Add(itemCards[i]);
+         }
+
+         // Remove riêng để tránh lỗi khi loop
+         foreach (var card in result)
+             RemoveItemCards(card);
+
+         return result;
+     } */
 
     /*  public List<ItemCard> SameCardTypes()
      {
@@ -382,6 +436,7 @@ public class ItemGroupCard : BaseDragObject
     private void RemoveItemCards(ItemCard itemCard)
     {
         itemCards.Remove(itemCard);
+        CheckAllItemCardOnOffRaycastTarget();
     }
 
     public bool IsConditionItemGroupCard()
@@ -661,5 +716,41 @@ public class ItemGroupCard : BaseDragObject
     public void ShowOutline(bool bl)
     {
         outline.gameObject.SetActive(bl);
+    }
+
+    private void CheckAllItemCardOnOffRaycastTarget()
+    {
+        for (int i = 0; i < itemCards.Count; i++)
+        {
+            itemCards[i].OnOffRaycastTarget(false);
+        }
+
+        if (itemCards.Count == 0 || isMove) return;
+
+        int lastIndex = itemCards.Count - 1;
+        int targetID = itemCards[lastIndex].CardID;
+
+        for (int i = lastIndex; i >= 0; i--)
+        {
+            ItemCard card = itemCards[i];
+
+            if (card.CardID != targetID) break;
+
+            if (card.IsGold)
+            {
+                if (i == lastIndex)
+                {
+                    card.OnOffRaycastTarget(true);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                card.OnOffRaycastTarget(true);
+            }
+        }
     }
 }

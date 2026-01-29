@@ -42,7 +42,7 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
         RectTransform rectItemPosCard = PosCard.Instance.SizeImgItemPosCard();
         Vector2 size = new Vector2(rectItemPosCard.rect.width, rectItemPosCard.rect.height);
         itemCard.SetSize(size);
-        // itemCard.OnOffRaycastTarget(false);
+        itemCard.OnOffRaycastTarget(false);
         noGroupManager.SetSize(size);
         LoadDataCard(index, cardPackage, itemCard);
         itemCards.Add(itemCard);

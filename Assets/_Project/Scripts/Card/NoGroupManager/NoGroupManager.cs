@@ -139,7 +139,7 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
         ActiveCard(card);
 
         int slot = Mathf.Min(indexPos, posCards.Count - 1);
-        card.slotIndex = slot;
+        card.SlotIndex = slot;
 
         MoveCard(card, posCards[slot], 0.3f, () =>
         {
@@ -160,8 +160,8 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
     {
         foreach (var card in itemCards)
         {
-            card.slotIndex = Mathf.Max(0, card.slotIndex - 1);
-            MoveCard(card, posCards[card.slotIndex], 0.15f);
+            card.SlotIndex = Mathf.Max(0, card.SlotIndex - 1);
+            MoveCard(card, posCards[card.SlotIndex], 0.15f);
         }
 
         isPauseClick = indexPos == maxCount;
@@ -192,8 +192,8 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
         {
             var card = itemCards[i];
             int naturalSlot = Mathf.Clamp(i - startIndex, 0, posCards.Count - 1);
-            card.slotIndex = naturalSlot;
-            MoveCard(card, posCards[card.slotIndex], 0.15f);
+            card.SlotIndex = naturalSlot;
+            MoveCard(card, posCards[card.SlotIndex], 0.15f);
         }
     }
 
@@ -211,8 +211,8 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
             int naturalSlot = Mathf.Clamp(i - startIndex, 0, posCards.Count - 1);
             int shiftedSlot = ClampSlot(naturalSlot + 1);
 
-            card.slotIndex = shiftedSlot;
-            MoveCard(card, posCards[card.slotIndex], 0.15f);
+            card.SlotIndex = shiftedSlot;
+            MoveCard(card, posCards[card.SlotIndex], 0.15f);
         }
     }
 
