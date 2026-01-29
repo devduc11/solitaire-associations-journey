@@ -16,8 +16,11 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
 
     [SerializeField]
     private List<ItemCard> noGroupItemCards = new List<ItemCard>();
-    public List<ItemCard> NoGroupItemCards => noGroupItemCards;
-
+    public List<ItemCard> NoGroupItemCards
+    {
+        get => noGroupItemCards;
+        set => noGroupItemCards = value;
+    }
 
     protected override ItemCard GetPrefab()
     {
@@ -39,7 +42,7 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
         RectTransform rectItemPosCard = PosCard.Instance.SizeImgItemPosCard();
         Vector2 size = new Vector2(rectItemPosCard.rect.width, rectItemPosCard.rect.height);
         itemCard.SetSize(size);
-        itemCard.OnOffRaycastTarget(false);
+        // itemCard.OnOffRaycastTarget(false);
         noGroupManager.SetSize(size);
         LoadDataCard(index, cardPackage, itemCard);
         itemCards.Add(itemCard);
@@ -129,7 +132,7 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
                 if (cardIndex < itemCards.Count)
                 {
                     ItemCard itemCard = itemCards[cardIndex];
-                    itemCard.SetGroupCar(group);
+                    itemCard.SetGroupCarSpawn(group);
                     cardIndex++;
                 }
             }

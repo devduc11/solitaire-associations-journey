@@ -51,6 +51,9 @@ public class ItemCard : BaseDragObject
     private List<TextMeshProUGUI> nameTypes = new List<TextMeshProUGUI>();
     public List<TextMeshProUGUI> NameTypes => nameTypes;
 
+    [SerializeField]
+    private Transform parentNoGroup;
+
     protected override void Start()
     {
         base.Start();
@@ -59,6 +62,10 @@ public class ItemCard : BaseDragObject
 
     public override void OnPointerDown(PointerEventData eventData)
     {
+        if (!isGroup)
+        {
+            parentNoGroup = transform.parent;
+        }
         GameAction.OnMergeItemCard?.Invoke(itemGroupCard, this);
         GameAction.OnPointerDownItemCard?.Invoke(eventData);
     }
@@ -78,24 +85,34 @@ public class ItemCard : BaseDragObject
         transform.SetParent(transformParent);
     }
 
-    public void SetGroupCar(ItemGroupCard itemGroupCard)
+    public void SetGroupCarSpawn(ItemGroupCard itemGroupCard)
     {
-        SetParentItemCard(itemGroupCard.transform);
-        itemGroupCard.AddItemCard(this);
         SetIsGroup(true);
+        SetParentItemCard(itemGroupCard.transform);
+        itemGroupCard.AddItemCard(this, isSpawn: true, isGroup: isGroup);
     }
 
     public void SetGroupCarMoveOff()
     {
         SetParentItemCard(itemGroupCard.transform);
         itemGroupCard.AddItemCard(this);
-        OnOffRaycastTarget(true);
+        // OnOffRaycastTarget(true);
     }
 
     public void SetMergeGroupCar(ItemGroupCard itemGroupCard)
     {
-        SetGroupCar(itemGroupCard);
-        OnOffRaycastTarget(true);
+        // SetIsGroup(true);
+        SetParentItemCard(itemGroupCard.transform);
+        itemGroupCard.AddItemCard(this, isGroup: isGroup);
+        // OnOffRaycastTarget(true);
+    }
+
+    public void SetMergeNoGroupCar(ItemGroupCard itemGroupCard)
+    {
+        SetIsGroup(true);
+        SetParentItemCard(itemGroupCard.transform);
+        itemGroupCard.AddItemCard(this, isGroup: isGroup);
+        // OnOffRaycastTarget(true);
     }
 
     public bool IsSameCard(ItemCard other)
@@ -157,6 +174,14 @@ public class ItemCard : BaseDragObject
                gameObject.SetActive(false);
                endAction?.Invoke();
            });
+    }
+
+    public void ItemNoGroup()
+    {
+        if (!isGroup)
+        {
+            SetParentItemCard(parentNoGroup);
+        }
     }
 
 }

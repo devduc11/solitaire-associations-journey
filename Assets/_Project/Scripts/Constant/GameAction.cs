@@ -7,4 +7,7 @@ public class GameAction
     public static Action<UnityEngine.EventSystems.PointerEventData> OnPointerDownItemCard;
     public static Action<UnityEngine.EventSystems.PointerEventData> OnDragItemCard;
     public static Action<UnityEngine.EventSystems.PointerEventData> OnPointerUpItemCard;
+    public static Action<bool> OnDownItemGroupCardMove;
+    public static Action OnDragItemGroupCardMove;
+    public static Action OnUpItemGroupCardMove;
 }

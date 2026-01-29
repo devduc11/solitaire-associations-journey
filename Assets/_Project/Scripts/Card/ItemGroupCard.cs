@@ -23,7 +23,7 @@ public class ItemGroupCard : BaseDragObject
         set => itemCards = value;
     }
 
-    ItemGroupCard excludeItemGroupCard;
+    public ItemGroupCard excludeItemGroupCard;
     public ItemGroupCard nearestItemGroupCard;
 
     public override void OnPointerDown(PointerEventData eventData)
@@ -41,6 +41,7 @@ public class ItemGroupCard : BaseDragObject
 
         base.OnPointerDown(eventData);
         SetIsMove(true);
+        GameAction.OnDownItemGroupCardMove?.Invoke(IsNoGroupCardMove());
     }
 
     public override void OnDrag(PointerEventData eventData)
@@ -49,6 +50,8 @@ public class ItemGroupCard : BaseDragObject
         base.OnDrag(eventData);
 
         IsConditionItemGroupCard();
+
+        GameAction.OnDragItemGroupCardMove?.Invoke();
     }
 
     protected override void Update()
@@ -86,17 +89,17 @@ public class ItemGroupCard : BaseDragObject
         {
             if (IsNoGroupCardMove())
             {
-                Debug.Log($"pnad: 1111111111111111111111111111");
-                
+                CheckItemNoGroupCardMove();
             }
             else
             {
                 CheckGroupCarMoveOff();
             }
+            GameAction.OnUpItemGroupCardMove?.Invoke();
         });
     }
 
-    private void CheckGroupCarMoveOff() 
+    private void CheckGroupCarMoveOff()
     {
         ActionGroupCardMove(() =>
         {
@@ -123,10 +126,28 @@ public class ItemGroupCard : BaseDragObject
             actionOff?.Invoke();
         }
 
+        ResetGroupCardMove();
+        GroupCardSpawner.Instance.ResetItemGroupCard();
+    }
+
+    private void CheckItemNoGroupCardMove()
+    {
+        if (isMove)
+        {
+            foreach (var itemCard in itemCards)
+            {
+                itemCard.ItemNoGroup();
+            }
+        }
+        ResetGroupCardMove();
+    }
+
+    private void ResetGroupCardMove()
+    {
         GroupCardSpawner.Instance.ActiveItemGroupCardMove(false);
         SetIsMove(false);
+        excludeItemGroupCard = null;
         nearestItemGroupCard = null;
-        GroupCardSpawner.Instance.ResetItemGroupCard();
     }
 
     private bool IsNoGroupCardMove()
@@ -164,28 +185,27 @@ public class ItemGroupCard : BaseDragObject
         ShowOutline(bl);
     }
 
-
-    public void AddItemCard(ItemCard itemCard, bool isMove = false, ItemGroupCard itemGroupCard = null)
+    public void AddItemCard(ItemCard itemCard, bool isMove = false, ItemGroupCard itemGroupCard = null, bool isSpawn = false, bool isGroup = false)
     {
         itemCards.Add(itemCard);
-        TopCenter(isMove);
+
+        if (!isGroup && isMove)
+        {
+            Debug.Log($"pnad: NoGroup");
+            TopCenterNoGroup();
+            return;
+        }
+
+        TopCenter(isMove, isSpawn);
         if (isMove)
         {
             excludeItemGroupCard = itemGroupCard;
-            // foreach (ItemCard itemCardExclude in excludeItemGroupCard.itemCards)
-            // {
-            //     if (itemCardExclude.CardID == itemCard.CardID)
-            //     {
-            //         RemoveItemCards(itemCardExclude);
-            //     }
-            // }
         }
     }
 
     float overlapRatio = 0.25f;
-    public void TopCenter(bool isMove = false)
+    public void TopCenter(bool isMove = false, bool isSpawn = false)
     {
-
         for (int i = 0; i < itemCards.Count; i++)
         {
             ItemCard itemCard = itemCards[i];
@@ -193,13 +213,13 @@ public class ItemGroupCard : BaseDragObject
             {
                 itemCard.SetItemGroupCard(this);
             }
-            SetTopCenter(itemCard.rect, i, overlapRatio);
+            SetTopCenter(itemCard.rect, i, overlapRatio, isSpawn: isSpawn);
         }
 
         ResizeParentToStack(overlapRatio);
     }
 
-    public void SetTopCenter(RectTransform rt, int index, float overlapRatio, float duration = 0.25f)
+    public void SetTopCenter(RectTransform rt, int index, float overlapRatio, float duration = 0.25f, bool isSpawn = false)
     {
         rt.parent.SetAsLastSibling(); //ĐƯA ITEM LÊN TRÊN CÙNG
         rt.anchorMin = new Vector2(0.5f, 1f);
@@ -213,8 +233,46 @@ public class ItemGroupCard : BaseDragObject
         rt.DOKill();
 
         // Tween vị trí
-        rt.DOAnchorPos(new Vector2(0f, y), duration)
-          .SetEase(Ease.OutQuad);
+        // rt.DOAnchorPos(new Vector2(0f, y), duration)
+        //   .SetEase(Ease.OutQuad);
+
+        if (isSpawn)
+        {
+            float startY = y + 200;
+
+            rt.anchoredPosition = new Vector2(0f, startY);
+
+            rt.DOAnchorPosY(y, duration)
+              .SetEase(Ease.OutQuad);
+        }
+        else
+        {
+            rt.DOAnchorPos(new Vector2(0f, y), duration)
+            .SetEase(Ease.OutQuad);
+        }
+    }
+
+    public void TopCenterNoGroup()
+    {
+        for (int i = 0; i < itemCards.Count; i++)
+        {
+            ItemCard itemCard = itemCards[i];
+            SetTopCenterNoGroup(itemCard.rect, i, overlapRatio);
+        }
+
+        ResizeParentToStack(overlapRatio);
+    }
+
+    public static void SetTopCenterNoGroup(RectTransform rt, int index, float overlapRatio)
+    {
+        rt.anchorMin = new Vector2(0.5f, 1f);
+        rt.anchorMax = new Vector2(0.5f, 1f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+
+        float height = rt.rect.height;
+        float y = -height * 0.5f - height * overlapRatio * index;
+
+        rt.anchoredPosition = new Vector2(0f, y);
     }
 
     // public static void SetTopCenter(RectTransform rt, int index, float overlapRatio)
@@ -539,13 +597,30 @@ public class ItemGroupCard : BaseDragObject
 
     private void CheckGroupCarMoveMerge()
     {
-        ActionGroupCardMove(() =>
+        if (IsNoGroupCardMove())
         {
-            foreach (var itemCard in itemCards)
+            if (isMove)
             {
-                itemCard.SetMergeGroupCar(nearestItemGroupCard);
+                foreach (var itemCard in itemCards)
+                {
+                    itemCard.SetMergeNoGroupCar(nearestItemGroupCard);
+                }
+                ResetGroupCardMove();
+                GroupCardSpawner.Instance.ResetItemGroupCard();
             }
-        });
+        }
+        else
+        {
+            ActionGroupCardMove(() =>
+            {
+                foreach (var itemCard in itemCards)
+                {
+                    itemCard.SetMergeGroupCar(nearestItemGroupCard);
+                }
+            });
+        }
+
+        GameAction.OnUpItemGroupCardMove?.Invoke();
     }
 
     public ItemCard GetTopItemCardNearest()

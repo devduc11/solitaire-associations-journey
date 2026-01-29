@@ -16,6 +16,50 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
     private RectTransform parentPosCardRect;
     [SerializeField, GetInChildren, Name("Pos_1", "Pos_2", "Pos_3")]
     private List<RectTransform> posCards = new List<RectTransform>();
+    [SerializeField]
+    private List<ItemCard> itemCards = new();
+    private bool isNoGroupCard;
+    private bool isMoveLeft;
+    private bool isPauseClick;
+    private int indexPos = -1;
+    private int maxCount = -1;
+
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        GameAction.OnDownItemGroupCardMove += DownItemGroupCardMove;
+        GameAction.OnDragItemGroupCardMove += DragItemGroupCardMove;
+        GameAction.OnUpItemGroupCardMove += UpUpItemGroupCardMove;
+    }
+
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+        GameAction.OnDownItemGroupCardMove -= DownItemGroupCardMove;
+        GameAction.OnDragItemGroupCardMove -= DragItemGroupCardMove;
+        GameAction.OnUpItemGroupCardMove -= UpUpItemGroupCardMove;
+    }
+
+    private void DownItemGroupCardMove(bool isNoGroupCard)
+    {
+        this.isNoGroupCard = isNoGroupCard;
+    }
+
+    private void DragItemGroupCardMove()
+    {
+        if (!isNoGroupCard) return;
+        MoveLeft();
+    }
+
+    private void UpUpItemGroupCardMove()
+    {
+        if (!isNoGroupCard) return;
+        RemoveItemCards();
+        MoveRight();
+
+        if (itemCards.Count == 0) return;
+        itemCards[^1].OnOffRaycastTarget(true);
+    }
 
     public void SetSize(Vector2 size)
     {
@@ -60,7 +104,6 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
         rectTarget.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
     }
 
-    public bool isPauseClick;
     public void OnPointerClick(PointerEventData eventData)
     {
         if (itemCards.Count > 0)
@@ -80,17 +123,15 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
         AddItemCardNoGroup();
     }
 
-    public int indexPos = -1;
-    public int maxCount = -1;
 
-    public List<ItemCard> itemCards = new();
 
     private void AddItemCardNoGroup()
     {
         var cards = cardSpawner.NoGroupItemCards;
         if (cards.Count == 0) return;
 
-        maxCount = maxCount == -1 ? cards.Count - 1 : maxCount;
+        // maxCount = maxCount == -1 ? cards.Count - 1 : maxCount;
+        maxCount = cards.Count - 1;
 
         indexPos = Mathf.Min(indexPos + 1, cards.Count - 1);
 
@@ -102,20 +143,20 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
 
         MoveCard(card, posCards[slot], 0.3f, () =>
         {
-            if (indexPos >= posCards.Count)
-                MoveRight();
-
-            isPauseClick = indexPos == maxCount;
-
-            if (!itemCards.Contains(card))
-            {
-                itemCards.Add(card);
-                itemCards[^1].OnOffRaycastTarget(true);
-            }
         });
+        if (indexPos >= posCards.Count)
+            MoveRightClick();
+
+        isPauseClick = indexPos == maxCount;
+
+        if (!itemCards.Contains(card))
+        {
+            itemCards.Add(card);
+            itemCards[^1].OnOffRaycastTarget(true);
+        }
     }
 
-    private void MoveRight()
+    private void MoveRightClick()
     {
         foreach (var card in itemCards)
         {
@@ -139,6 +180,47 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
         isPauseClick = false;
     }
 
+    private void MoveRight()
+    {
+        if (!isMoveLeft) return;
+        isMoveLeft = false;
+
+        if (indexPos <= posCards.Count - 1) return;
+
+        int startIndex = Mathf.Max(0, indexPos - (posCards.Count - 1));
+        for (int i = startIndex; i < itemCards.Count; i++)
+        {
+            var card = itemCards[i];
+            int naturalSlot = Mathf.Clamp(i - startIndex, 0, posCards.Count - 1);
+            card.slotIndex = naturalSlot;
+            MoveCard(card, posCards[card.slotIndex], 0.15f);
+        }
+    }
+
+    private void MoveLeft()
+    {
+        if (isMoveLeft) return;
+        isMoveLeft = true;
+
+        if (indexPos <= posCards.Count - 1) return;
+
+        int startIndex = Mathf.Max(0, indexPos - (posCards.Count - 1));
+        for (int i = startIndex; i < itemCards.Count - 1; i++)
+        {
+            var card = itemCards[i];
+            int naturalSlot = Mathf.Clamp(i - startIndex, 0, posCards.Count - 1);
+            int shiftedSlot = ClampSlot(naturalSlot + 1);
+
+            card.slotIndex = shiftedSlot;
+            MoveCard(card, posCards[card.slotIndex], 0.15f);
+        }
+    }
+
+    int ClampSlot(int index)
+    {
+        return Mathf.Clamp(index, 0, posCards.Count - 1);
+    }
+
     private void ActiveCard(ItemCard card)
     {
         card.gameObject.SetActive(true);
@@ -152,103 +234,29 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
             tween.OnComplete(onComplete);
     }
 
-     public ItemCard ItemCardNoGroup()
+    public ItemCard ItemCardNoGroup()
     {
-        return itemCards[^1]; // noGroupItemCards[noGroupItemCards.Count - 1]
+        return itemCards[^1]; // itemCards[itemCards.Count - 1]
     }
 
+    private void RemoveItemCards()
+    {
+        bool removed = false;
 
+        for (int i = itemCards.Count - 1; i >= 0; i--)
+        {
+            if (!itemCards[i].IsGroup) continue;
 
-    /*  public int indexPos = -1;
-     public int maxCount = -1;
+            var removedCard = itemCards[i];
+            itemCards.RemoveAt(i);
+            cardSpawner.NoGroupItemCards.Remove(removedCard);
+            removed = true;
+        }
 
-     public List<ItemCard> itemCards = new List<ItemCard>();
-     private void AddItemCardNoGroup()
-     {
-         List<ItemCard> cards = cardSpawner.NoGroupItemCards;
-         if (maxCount == -1)
-         {
-             maxCount = cards.Count - 1;
-         }
-
-         if (cards.Count == 0) return;
-
-         indexPos += 1;
-         // clamp để tránh out of range
-         indexPos = Mathf.Min(indexPos, cards.Count - 1);
-
-         ItemCard card = cards[indexPos];
-         card.gameObject.SetActive(true);
-         card.transform.SetAsLastSibling();
-
-         int posIndexNew = Mathf.Min(indexPos, posCards.Count - 1);
-         card.slotIndex = posIndexNew;
-         RectTransform targetPos = posCards[posIndexNew];
-
-         card.rect
-             .DOMove(targetPos.position, 0.3f)
-             .SetEase(Ease.OutCubic)
-             .OnComplete(() =>
-             {
-                 if (indexPos >= posCards.Count)
-                 {
-                     MoveRight();
-                     if (indexPos == maxCount)
-                     {
-                         isPauseClick = true;
-                     }
-                 }
-                 else
-                 {
-                     isPauseClick = false;
-                 }
-                 if (!itemCards.Contains(card))
-                 {
-                     itemCards.Add(card);
-                 }
-             });
-     }
-
-     private void MoveRight()
-     {
-         for (int i = 0; i < itemCards.Count; i++)
-         {
-             ItemCard itemCard = itemCards[i];
-             if (itemCard.slotIndex > 0)
-             {
-                 itemCard.slotIndex -= 1;
-             }
-             RectTransform targetPos = posCards[itemCard.slotIndex];
-             itemCard.rect
-           .DOMove(targetPos.position, 0.15f)
-           .SetEase(Ease.OutCubic);
-             if (i == itemCards.Count - 1)
-             {
-                 if (indexPos != maxCount)
-                 {
-                     isPauseClick = false;
-                 }
-                 else if (indexPos == maxCount)
-                 {
-                     isPauseClick = true;
-                 }
-             }
-         }
-     }
-
-     private void ReplayClick()
-     {
-         if (indexPos != maxCount) return;
-         indexPos = -1;
-         for (int i = 0; i < itemCards.Count; i++)
-         {
-             itemCards[i].MoveNoGroup();
-             if (i == itemCards.Count - 1)
-             {
-                 itemCards.Clear();
-                 isPauseClick = false;
-             }
-         }
-     } */
-
+        if (removed)
+        {
+            indexPos = itemCards.Count - 1;
+            maxCount = cardSpawner.NoGroupItemCards.Count - 1;
+        }
+    }
 }

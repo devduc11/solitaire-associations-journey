@@ -137,7 +137,7 @@ public class CardManager : BaseMonoBehaviour
             var card = cards[i];
             card.SetParentItemCard(moveGroup.transform);
             card.OnOffRaycastTarget(false);
-            moveGroup.AddItemCard(card, true, card.ItemGroupCard);
+            moveGroup.AddItemCard(card, true, card.ItemGroupCard, isGroup: itemCard.IsGroup);
         }
     }
 
