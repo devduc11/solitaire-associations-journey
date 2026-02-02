@@ -4,6 +4,7 @@ using System.Linq;
 using DBD.BaseGame;
 using DG.Tweening;
 using Teo.AutoReference;
+using Unity.Properties;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -25,6 +26,7 @@ public class ItemGroupCard : BaseDragObject
 
     public ItemGroupCard excludeItemGroupCard;
     public ItemGroupCard nearestItemGroupCard;
+    public ItemGroupMerge nearestItemGroupCardMerge;
 
     public override void OnPointerDown(PointerEventData eventData)
     {
@@ -49,6 +51,7 @@ public class ItemGroupCard : BaseDragObject
         if (!isDragging) return;
         base.OnDrag(eventData);
 
+        IsConditionItemGroupMerge();
         IsConditionItemGroupCard();
 
         GameAction.OnDragItemGroupCardMove?.Invoke();
@@ -73,6 +76,58 @@ public class ItemGroupCard : BaseDragObject
     {
         isDragging = false;
         isAnyDragging = false;
+        if (IsConditionItemGroupMerge())
+        {
+            if (IsGoldItemCard() && nearestItemGroupCardMerge.CardID == -1)
+            {
+                CheckItemGroupCardMerge();
+            }
+            else if (!IsGoldItemCard() && nearestItemGroupCardMerge.CardID != -1)
+            {
+                bool found = false;
+
+                foreach (var itemCard in itemCards)
+                {
+                    if (itemCard.CardID == nearestItemGroupCardMerge.CardID)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found)
+                {
+                    CheckItemGroupCardMerge();
+                }
+                else
+                {
+                    CheckGroupCard();
+                }
+            }
+            else
+            {
+                CheckGroupCard();
+            }
+        }
+        else
+        {
+            CheckGroupCard();
+        }
+    }
+
+    private void CheckItemGroupCardMerge()
+    {
+        nearestItemGroupCardMerge.CheckMerge(itemCards, () =>
+        {
+            // Debug.Log($"pnad: CheckItemGroupCardMerge");
+            GroupCardSpawner.Instance.ResetItemGroupCard();
+            GameAction.OnUpItemGroupCardMove?.Invoke();
+        });
+        ResetGroupCardMove();
+    }
+
+    private void CheckGroupCard()
+    {
         if (IsConditionItemGroupCard())
         {
             CheckMergeItemCard();
@@ -148,6 +203,7 @@ public class ItemGroupCard : BaseDragObject
         SetIsMove(false);
         excludeItemGroupCard = null;
         nearestItemGroupCard = null;
+        nearestItemGroupCardMerge = null;
     }
 
     private bool IsNoGroupCardMove()
@@ -526,10 +582,10 @@ public class ItemGroupCard : BaseDragObject
         return false;
     } */
 
-
-    /* public bool IsConditionItemGroupCard()
+    public bool IsConditionItemGroupMerge()
     {
-        nearestItemGroupCard = null;
+        // Debug.Log($"pnad: {isGoldItemCard}");
+        nearestItemGroupCardMerge = null;
 
         RectTransform selfRect = transform as RectTransform;
         if (selfRect == null) return false;
@@ -537,10 +593,11 @@ public class ItemGroupCard : BaseDragObject
         // Rect của object đang kéo (world)
         Rect selfWorldRect = GetWorldRect(selfRect);
 
-        foreach (var spawner in GroupCardSpawner.Instance.GroupContainsCards())
+        foreach (var spawner in GroupMergeSpawner.Instance.ItemGroupMerges)
         {
-            if (spawner == this || spawner == excludeItemGroupCard)
-                continue;
+            // if (!isGoldItemCard) return false;
+            // if (spawner == this || spawner == excludeItemGroupCard)
+            //     continue;
 
             RectTransform targetRect = spawner.transform as RectTransform;
             if (targetRect == null)
@@ -556,12 +613,61 @@ public class ItemGroupCard : BaseDragObject
             if (!selfWorldRect.Overlaps(targetWorldRect))
                 continue;
 
-            nearestItemGroupCard = spawner;
+            nearestItemGroupCardMerge = spawner;
             return true;
         }
 
         return false;
-    } */
+    }
+
+    private bool IsGoldItemCard()
+    {
+        if (isMove)
+        {
+            foreach (var itemCard in itemCards)
+            {
+                if (!itemCard.IsGold) return false;
+            }
+        }
+
+        return true;
+    }
+
+    /* public bool IsConditionItemGroupCard()
+   {
+       nearestItemGroupCard = null;
+
+       RectTransform selfRect = transform as RectTransform;
+       if (selfRect == null) return false;
+
+       // Rect của object đang kéo (world)
+       Rect selfWorldRect = GetWorldRect(selfRect);
+
+       foreach (var spawner in GroupCardSpawner.Instance.GroupContainsCards())
+       {
+           if (spawner == this || spawner == excludeItemGroupCard)
+               continue;
+
+           RectTransform targetRect = spawner.transform as RectTransform;
+           if (targetRect == null)
+               continue;
+
+           Rect targetWorldRect = GetWorldRect(targetRect);
+
+           // 1️⃣ Check overlap theo trục X (BẮT BUỘC)
+           if (!IsHorizontalOverlapEnough(selfWorldRect, targetWorldRect, 0.5f))
+               continue;
+
+           // 2️⃣ Check có giao nhau theo trục Y
+           if (!selfWorldRect.Overlaps(targetWorldRect))
+               continue;
+
+           nearestItemGroupCard = spawner;
+           return true;
+       }
+
+       return false;
+   } */
 
     /*  Rect GetWorldRect(RectTransform rt)
      {
@@ -698,13 +804,11 @@ public class ItemGroupCard : BaseDragObject
         startPosition = pos;
     }
 
-    public bool isTest;
     public void ResetSizePos()
     {
         if (!isMove && itemCards.Count == 0)
         {
             image.rectTransform.sizeDelta = startSizeGroup;
-            if (isTest) return;
             transform.position = startPosition;
         }
         else

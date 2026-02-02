@@ -55,9 +55,13 @@ public class CardManager : BaseMonoBehaviour
     {
         int maxColumn = loadLevel.Columns.Count;
         GroupCardSpawner.Instance.CheckSpawnItemGroupCard(maxColumn);
+        GroupMergeSpawner.Instance.SpawnItemGroupMerge(maxColumn);
         LoadCard();
+        PosCard.Instance.SetSizeObj();
+        GroupMergeSpawner.Instance.SetSizeObj();
     }
 
+// int 
     public void LoadCard()
     {
         List<int> typeCards = TypeCards(); // ✅ random 1 lần
@@ -76,9 +80,9 @@ public class CardManager : BaseMonoBehaviour
             // 👉 Spawn card thường
             for (int n = 0; n < normalCount; n++)
             {
-                cardSpawner.SpawnItemCard(cardPackage, false);
+                cardSpawner.SpawnItemCard(cardPackage, false, normalCount);
             }
-            cardSpawner.SpawnItemCard(cardPackage, true); //Spawn card vàng
+            cardSpawner.SpawnItemCard(cardPackage, true, normalCount); //Spawn card vàng
 
             // // 👉 Spawn card vàng
             // for (int g = 0; g < goldCount; g++)
@@ -111,7 +115,6 @@ public class CardManager : BaseMonoBehaviour
 
     }
 
-
     private void MergeItemCard(ItemGroupCard itemGroupCard, ItemCard itemCard)
     {
         var spawner = GroupCardSpawner.Instance;
@@ -141,7 +144,6 @@ public class CardManager : BaseMonoBehaviour
         }
     }
 
-
     private void DownItemCard(PointerEventData eventData)
     {
         ItemGroupCard itemGroupCardMove = GroupCardSpawner.Instance.ItemGroupCardMove();
@@ -158,5 +160,10 @@ public class CardManager : BaseMonoBehaviour
     {
         ItemGroupCard itemGroupCardMove = GroupCardSpawner.Instance.ItemGroupCardMove();
         itemGroupCardMove.OnPointerUp(eventData);
+    }
+
+    private void CheckWin()
+    {
+        
     }
 }

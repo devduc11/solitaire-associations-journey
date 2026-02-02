@@ -43,6 +43,14 @@ public class ItemCard : BaseDragObject
     }
 
     [SerializeField]
+    private int target;
+    public int Target
+    {
+        get => target;
+        set => target = value;
+    }
+
+    [SerializeField]
     private ItemGroupCard itemGroupCard;
     public ItemGroupCard ItemGroupCard => itemGroupCard;
 
@@ -60,14 +68,13 @@ public class ItemCard : BaseDragObject
     [SerializeField]
     private Transform parentNoGroup;
 
-    protected override void Start()
-    {
-        base.Start();
-        startPosition = transform.position;
-    }
+    [SerializeField, GetInChildren, Name("TargetText")]
+    private TextMeshProUGUI targetText;
+
 
     public override void OnPointerDown(PointerEventData eventData)
     {
+
         if (!isGroup)
         {
             parentNoGroup = transform.parent;
@@ -161,6 +168,23 @@ public class ItemCard : BaseDragObject
         }
     }
 
+    public void SetIsGold(bool bl)
+    {
+        isGold = bl;
+        ShowTargetText(bl);
+    }
+
+    public void ShowTargetText(bool bl)
+    {
+        targetText.gameObject.SetActive(bl);
+    }
+
+    public void SetTarget(int index)
+    {
+        targetText.text = $"0/{index}";
+        target = index;
+    }
+
     public void SetIsGroup(bool bl)
     {
         isGroup = bl;
@@ -184,6 +208,18 @@ public class ItemCard : BaseDragObject
         {
             SetParentItemCard(parentNoGroup);
         }
+    }
+
+    public void ResetItem()
+    {
+        SetIsGold(false);
+        SetIsGroup(false);
+        SetTarget(0);
+    }
+
+    public void SetPos()
+    {
+        startPosition = transform.position;
     }
 
 }

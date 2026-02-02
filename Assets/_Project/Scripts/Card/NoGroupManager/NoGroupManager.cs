@@ -18,7 +18,7 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
     private List<RectTransform> posCards = new List<RectTransform>();
     [SerializeField]
     private List<ItemCard> itemCards = new();
-    private bool isNoGroupCard;
+    public bool isNoGroupCard;
     private bool isMoveLeft;
     private bool isPauseClick;
     private int indexPos = -1;

@@ -7,7 +7,7 @@ public class PosCard : BaseMonoBehaviour
 {
     private static PosCard instance;
     public static PosCard Instance => instance;
-    [SerializeField, Get] public RectTransform rect;
+    [SerializeField, Get] private RectTransform rect;
     [SerializeField, GetInChildren]
     private List<ItemPosCard> itemPosCards = new List<ItemPosCard>();
     // public List<ItemPosCard> ItemPosCards => itemPosCards;
@@ -49,12 +49,7 @@ public class PosCard : BaseMonoBehaviour
         return itemPosCards[indexPos].Pos();
     }
 
-    public void _Test()
-    {
-        SetSizeObj();
-    }
-
-    private void SetSizeObj()
+    public void SetSizeObj()
     {
         SizeObj(rect, rect.rect.width, SizeImgItemPosCard().rect.height);
     }

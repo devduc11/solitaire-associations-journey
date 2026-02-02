@@ -30,13 +30,15 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
     public int index;
     public int indexPos;
 
-    public void SpawnItemCard(CardPackage cardPackage, bool isGold)
+    public void SpawnItemCard(CardPackage cardPackage, bool isGold, int target = 0)
     {
         if (GroupCardSpawner.Instance.GroupContainsCards().Count == 0) return;
         ItemCard itemCard = Spawn(transform.position, true);
+        itemCard.SetPos();
         int index = isGold ? 1 : (cardPackage.SpriteCardType.Count > 0 ? 0 : 1);
         itemCard.ShowSpriteOrName(index);
-        itemCard.IsGold = isGold;
+        itemCard.SetIsGold(isGold);
+        itemCard.SetTarget(target);
         itemCard.CardID = cardPackage.IDCardPackage;
         itemCard.name = $"itemCard_{cardPackage.NameCardPackage}";
         RectTransform rectItemPosCard = PosCard.Instance.SizeImgItemPosCard();
@@ -73,6 +75,8 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
                 if (!isUsed)
                 {
                     selectedSprite = spriteData;
+                    int originalIndex = cardPackage.SpriteCardType.IndexOf(selectedSprite);
+                    Debug.Log($"pnad: {originalIndex}");
                     break;
                 }
             }
@@ -102,6 +106,8 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
                 if (!isUsed)
                 {
                     selectedName = nameData;
+                    int originalIndex = cardPackage.NameType.IndexOf(selectedName);
+                    Debug.Log($"pnad: {originalIndex}");
                     break;
                 }
             }
@@ -164,9 +170,20 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
         noGroupManager.gameObject.SetActive(true);
     }
 
-    public void ResetListItemCard()
+    public void _ResetListItemCard()
     {
+        foreach (var itemCard in itemCards)
+        {
+            DespawnItemCard(itemCard);
+            itemCard.ResetItem();
+        }
         itemCards.Clear();
         noGroupItemCards.Clear();
+    }
+
+    public void DespawnItemCard(ItemCard itemCard)
+    {
+        itemCard.SetParentItemCard(transform);
+        Despawn(itemCard);
     }
 }

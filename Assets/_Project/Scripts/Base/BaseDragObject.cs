@@ -63,6 +63,7 @@ public class BaseDragObject : BaseMonoBehaviour, IPointerDownHandler, IDragHandl
         OnOffCol2D(false);
 
         // 🔥 ĐƯA ITEM ĐANG DRAG LÊN TRÊN CÙNG
+        transform.parent.SetAsLastSibling();
         transform.SetAsLastSibling();
     }
 
