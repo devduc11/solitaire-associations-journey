@@ -25,7 +25,13 @@ public class ItemCard : BaseDragObject
         get => isGroup;
         set => isGroup = value;
     }
-
+    [SerializeField]
+    private bool isGroupMerge;
+    public bool IsGroupMerge
+    {
+        get => isGroupMerge;
+        set => isGroupMerge = value;
+    }
     [SerializeField]
     private int cardID;
     public int CardID
@@ -48,6 +54,37 @@ public class ItemCard : BaseDragObject
     {
         get => target;
         set => target = value;
+    }
+
+    [SerializeField]
+    private int idTypeCard;
+    public int IDTypeCard
+    {
+        get => idTypeCard;
+        set => idTypeCard = value;
+    }
+
+    [SerializeField]
+    private int indexGroup;
+    public int IndexGroup
+    {
+        get => indexGroup;
+        set => indexGroup = value;
+    }
+
+    [SerializeField]
+    private int indexGroupMerge;
+    public int IndexGroupMerge
+    {
+        get => indexGroupMerge;
+        set => indexGroupMerge = value;
+    }
+    [SerializeField]
+    private int indexSpriteOrName;
+    public int IndexSpriteOrName
+    {
+        get => indexSpriteOrName;
+        set => indexSpriteOrName = value;
     }
 
     [SerializeField]
@@ -100,7 +137,16 @@ public class ItemCard : BaseDragObject
 
     public void SetGroupCarSpawn(ItemGroupCard itemGroupCard)
     {
+        SetSlotIndex(-1);
         SetIsGroup(true);
+        SetParentItemCard(itemGroupCard.transform);
+        itemGroupCard.AddItemCard(this, isSpawn: true, isGroup: isGroup);
+        SetIndexGroup(itemGroupCard.IndexGroup);
+        SetIndexGroupMerge(-1);
+    }
+
+    public void SetGroupCarSpawnLevelProgress(ItemGroupCard itemGroupCard)
+    {
         SetParentItemCard(itemGroupCard.transform);
         itemGroupCard.AddItemCard(this, isSpawn: true, isGroup: isGroup);
     }
@@ -109,19 +155,22 @@ public class ItemCard : BaseDragObject
     {
         SetParentItemCard(itemGroupCard.transform);
         itemGroupCard.AddItemCard(this);
+        SetIndexGroup(itemGroupCard.IndexGroup);
     }
 
-    public void SetMergeGroupCar(ItemGroupCard itemGroupCard)
+    public void SetMergeGroupCard(ItemGroupCard itemGroupCard)
     {
         SetParentItemCard(itemGroupCard.transform);
         itemGroupCard.AddItemCard(this, isGroup: isGroup);
+        SetIndexGroup(itemGroupCard.IndexGroup);
     }
 
-    public void SetMergeNoGroupCar(ItemGroupCard itemGroupCard)
+    public void SetMergeNoGroupCard(ItemGroupCard itemGroupCard)
     {
         SetIsGroup(true);
         SetParentItemCard(itemGroupCard.transform);
         itemGroupCard.AddItemCard(this, isGroup: isGroup);
+        SetIndexGroup(itemGroupCard.IndexGroup);
     }
 
     public bool IsSameCard(ItemCard other)
@@ -147,6 +196,7 @@ public class ItemCard : BaseDragObject
 
     public void ShowSpriteOrName(int index)
     {
+        indexSpriteOrName = index;
         spriteCardObj.SetActive(index == 0);
         nameTypeObj.SetActive(index == 1);
     }
@@ -166,6 +216,11 @@ public class ItemCard : BaseDragObject
         {
             nameType.text = name;
         }
+    }
+
+    public void SetIdTypeCard(int index)
+    {
+        idTypeCard = index;
     }
 
     public void SetIsGold(bool bl)
@@ -192,7 +247,7 @@ public class ItemCard : BaseDragObject
 
     public void MoveNoGroup(Action endAction = null)
     {
-        slotIndex = -1;
+        SetSlotIndex(-1);
         transform.DOMove(startPosition, 0.15f)
            .SetEase(Ease.OutCubic)
            .OnComplete(() =>
@@ -214,12 +269,90 @@ public class ItemCard : BaseDragObject
     {
         SetIsGold(false);
         SetIsGroup(false);
+        SetIsGroupMerge(false);
         SetTarget(0);
+        SetIndexGroup(-1);
+        SetIndexGroupMerge(-1);
     }
 
     public void SetPos()
     {
         startPosition = transform.position;
+    }
+
+    public void SetStatus(CardPackage cardPackage, int spriteOrName, bool isGold, int target = 0, Vector2 size = default)
+    {
+        SetPos();
+        ShowSpriteOrName(spriteOrName);
+        SetIsGold(isGold);
+        SetTarget(target);
+        cardID = cardPackage.IDCardPackage;
+        transform.name = $"itemCard_{cardPackage.NameCardPackage}";
+        SetSize(size);
+        OnOffRaycastTarget(false);
+    }
+
+    public void SetStatusLevelProgress(CardPackage cardPackage, SaveItemCard saveItemCard, Vector2 size = default)
+    {
+        SetPos();
+        ShowSpriteOrName(saveItemCard.IndexSpriteOrName);
+        SetIsGold(saveItemCard.IsGold);
+        SetIsGroup(saveItemCard.IsGroup);
+        SetIsGroupMerge(saveItemCard.IsGroupMerge);
+        SetTarget(saveItemCard.Target);
+        cardID = saveItemCard.CardID;
+        transform.name = $"itemCard_{cardPackage.NameCardPackage}";
+        SetSize(size);
+        OnOffRaycastTarget(false);
+        if (saveItemCard.IndexSpriteOrName == 0)
+        {
+            SetSpriteCards(cardPackage.SpriteCardType[saveItemCard.IDTypeCard]);
+        }
+        else if (saveItemCard.IndexSpriteOrName == 1)
+        {
+            if (!isGold)
+            {
+                SetNameTypes(cardPackage.NameType[saveItemCard.IDTypeCard]);
+            }
+            else
+            {
+                SetNameTypes(cardPackage.NameCardPackage);
+            }
+        }
+        SetIndexGroup(saveItemCard.IndexGroup);
+        SetIndexGroupMerge(saveItemCard.IndexGroupMerge);
+        SetSlotIndex(saveItemCard.SlotIndexNoGroup);
+        SetIdTypeCard(saveItemCard.IDTypeCard);
+    }
+
+    public void GroupMerge(ItemGroupMerge itemGroupMerge)
+    {
+        SetIsGroupMerge(true);
+        ShowTargetText(false);
+        SetIsGroup(true);
+        SetParentItemCard(itemGroupMerge.transform);
+        OnOffRaycastTarget(false);
+        SetIndexGroupMerge(itemGroupMerge.IndexGroupMerge);
+    }
+
+    private void SetIsGroupMerge(bool bl)
+    {
+        isGroupMerge = bl;
+    }
+
+    public void SetIndexGroup(int index)
+    {
+        indexGroup = index;
+    }
+
+    public void SetIndexGroupMerge(int index)
+    {
+        indexGroupMerge = index;
+    }
+
+    public void SetSlotIndex(int index)
+    {
+        slotIndex = index;
     }
 
 }

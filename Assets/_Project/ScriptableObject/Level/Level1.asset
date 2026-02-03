@@ -14,7 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Moves: 100
   Packages:
+  - NormalCardCount: 1
   - NormalCardCount: 8
-  - NormalCardCount: 8
-  - NormalCardCount: 3
-  Columns: 020000000400000006000000
+  Columns: 020000000200000002000000

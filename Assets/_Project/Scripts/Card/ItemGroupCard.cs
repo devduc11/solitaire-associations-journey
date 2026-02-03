@@ -24,6 +24,14 @@ public class ItemGroupCard : BaseDragObject
         set => itemCards = value;
     }
 
+    [SerializeField]
+    private int indexGroup;
+    public int IndexGroup
+    {
+        get => indexGroup;
+        set => indexGroup = value;
+    }
+
     public ItemGroupCard excludeItemGroupCard;
     public ItemGroupCard nearestItemGroupCard;
     public ItemGroupMerge nearestItemGroupCardMerge;
@@ -221,6 +229,11 @@ public class ItemGroupCard : BaseDragObject
     public void SetIsMove(bool bl)
     {
         isMove = bl;
+    }
+
+    public void SetIndexGroup(int index)
+    {
+        indexGroup = index;
     }
 
     public void SetSizeGroup(Vector2 size)
@@ -764,7 +777,7 @@ public class ItemGroupCard : BaseDragObject
             {
                 foreach (var itemCard in itemCards)
                 {
-                    itemCard.SetMergeNoGroupCar(nearestItemGroupCard);
+                    itemCard.SetMergeNoGroupCard(nearestItemGroupCard);
                 }
                 ResetGroupCardMove();
                 GroupCardSpawner.Instance.ResetItemGroupCard();
@@ -776,7 +789,7 @@ public class ItemGroupCard : BaseDragObject
             {
                 foreach (var itemCard in itemCards)
                 {
-                    itemCard.SetMergeGroupCar(nearestItemGroupCard);
+                    itemCard.SetMergeGroupCard(nearestItemGroupCard);
                 }
             });
         }

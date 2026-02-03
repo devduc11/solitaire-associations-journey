@@ -27,6 +27,7 @@ public class GroupMergeSpawner : BaseSpawner<GroupMergeSpawner, ItemGroupMerge>
             ItemGroupMerge itemGroupMerge = Spawn(Pos(i).position, true);
             itemGroupMerge.SetSizeGroupMerge(size);
             itemGroupMerge.name = $"itemGroupMerge_{i}";
+            itemGroupMerge.SetIndexGroupMerge(i);
             itemGroupMerges.Add(itemGroupMerge);
         }
 

@@ -18,24 +18,6 @@ public class SaveManager : BaseSaveManager<SaveManager, DataSave>
 
     #region Music
 
-    public bool Music
-    {
-        get => DataSave.IsMusicOff;
-        set { DataSave.IsMusicOff = value; }
-    }
-
-    public bool Sfx
-    {
-        get => DataSave.IsSfxOff;
-        set { DataSave.IsSfxOff = value; }
-    }
-
-    public bool Vibrate
-    {
-        get => DataSave.IsVibrateOff;
-        set { DataSave.IsVibrateOff = value; }
-    }
-
     #endregion
     protected override void Migrate(int fromVersion)
     {

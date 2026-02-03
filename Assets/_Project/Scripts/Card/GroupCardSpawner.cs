@@ -45,6 +45,7 @@ public class GroupCardSpawner : BaseSpawner<GroupCardSpawner, ItemGroupCard>
             itemGroupCard.OnOffRaycastTargetItemGroup(!isShow);
             string name = !isShow ? "Move" : $"{i}";
             itemGroupCard.name = $"itemGroupCard_{name}";
+            itemGroupCard.SetIndexGroup(i);
             itemGroupCards.Add(itemGroupCard);
         }
     }

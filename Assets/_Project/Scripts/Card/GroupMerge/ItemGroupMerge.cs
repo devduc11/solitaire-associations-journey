@@ -23,6 +23,14 @@ public class ItemGroupMerge : BaseMonoBehaviour
     }
 
     [SerializeField]
+    private int indexGroupMerge;
+    public int IndexGroupMerge
+    {
+        get => indexGroupMerge;
+        set => indexGroupMerge = value;
+    }
+
+    [SerializeField]
     private List<ItemCard> itemCardGroups = new List<ItemCard>();
     protected override void OnEnable()
     {
@@ -62,10 +70,7 @@ public class ItemGroupMerge : BaseMonoBehaviour
             ItemCard itemCard = itemCards[i];
 
             SetCarID(itemCard.CardID);
-            itemCard.ShowTargetText(false);
-            itemCard.SetIsGroup(true);
-            itemCard.SetParentItemCard(transform);
-            itemCard.OnOffRaycastTarget(false);
+            itemCard.GroupMerge(this);
             itemCardGroups.Add(itemCard);
             SetTarget(itemCard.Target);
             Tween tween = SetTopCenterTween(itemCard.rect, i, 0.25f);
@@ -87,6 +92,27 @@ public class ItemGroupMerge : BaseMonoBehaviour
                 // Debug.Log("🔥 All tweens finished");
             });
         });
+        targetText.transform.SetAsLastSibling();
+    }
+
+    public void CheckMergeLevelProgress(List<ItemCard> itemCards)
+    {
+        // CheckMerge(itemCards);
+        transform.parent.SetAsLastSibling();
+        transform.SetAsLastSibling();
+        Sequence seq = DOTween.Sequence();
+
+        for (int i = 0; i < itemCards.Count; i++)
+        {
+            ItemCard itemCard = itemCards[i];
+
+            SetCarID(itemCard.CardID);
+            itemCard.GroupMerge(this);
+            itemCardGroups.Add(itemCard);
+            SetTarget(itemCard.Target);
+            Tween tween = SetTopCenterTween(itemCard.rect, 1, 0);
+            seq.Join(tween); // chạy song song
+        }
         targetText.transform.SetAsLastSibling();
     }
 
@@ -123,6 +149,11 @@ public class ItemGroupMerge : BaseMonoBehaviour
         }
         itemCardGroups.Clear();
         SetTarget(0);
+    }
+
+    public void SetIndexGroupMerge(int index)
+    {
+        indexGroupMerge = index;
     }
 
 }

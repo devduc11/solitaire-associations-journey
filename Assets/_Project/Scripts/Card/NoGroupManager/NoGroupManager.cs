@@ -123,8 +123,6 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
         AddItemCardNoGroup();
     }
 
-
-
     private void AddItemCardNoGroup()
     {
         var cards = cardSpawner.NoGroupItemCards;
@@ -139,7 +137,8 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
         ActiveCard(card);
 
         int slot = Mathf.Min(indexPos, posCards.Count - 1);
-        card.SlotIndex = slot;
+        // card.SlotIndex = slot;
+        card.SetSlotIndex(slot);
 
         MoveCard(card, posCards[slot], 0.3f, () =>
         {
@@ -178,6 +177,7 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
 
         itemCards.Clear();
         isPauseClick = false;
+        SaveLevelManager.Instance.SaveLevelProgress();
     }
 
     private void MoveRight()
@@ -229,6 +229,7 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
 
     private void MoveCard(ItemCard card, RectTransform target, float time, TweenCallback onComplete = null)
     {
+        SaveLevelManager.Instance.SaveLevelProgress();
         var tween = card.rect.DOMove(target.position, time).SetEase(Ease.OutCubic);
         if (onComplete != null)
             tween.OnComplete(onComplete);

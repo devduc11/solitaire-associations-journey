@@ -56,13 +56,38 @@ public class CardManager : BaseMonoBehaviour
         int maxColumn = loadLevel.Columns.Count;
         GroupCardSpawner.Instance.CheckSpawnItemGroupCard(maxColumn);
         GroupMergeSpawner.Instance.SpawnItemGroupMerge(maxColumn);
-        LoadCard();
+        LoadCar();
         PosCard.Instance.SetSizeObj();
         GroupMergeSpawner.Instance.SetSizeObj();
     }
 
-// int 
-    public void LoadCard()
+    private void LoadCar()
+    {
+        if (SaveLevelManager.Instance.IsSaveLevel())
+        {
+            SaveLevelManager.Instance.LoadLevelProgress(() =>
+            {
+                var dataSave = SaveManager.Instance.DataSave;
+                CardSpawner cardSpawner = CardSpawner.Instance;
+
+                for (int i = 0; i < dataSave.SaveItemCards.Count; i++)
+                {
+                    SaveItemCard saveItemCard = dataSave.SaveItemCards[i];
+                    CardPackage cardPackage = dataCard.CardPackages[saveItemCard.CardID];
+                    cardSpawner.SpawnItemCardLevelProgress(cardPackage, saveItemCard);
+                }
+
+                cardSpawner.CheckGroupLevelProgress();
+
+            });
+        }
+        else
+        {
+            LoadCardNew();
+        }
+    }
+
+    private void LoadCardNew()
     {
         List<int> typeCards = TypeCards(); // ✅ random 1 lần
         Debug.Log($"pnad: {string.Join(", ", typeCards)}");
@@ -111,7 +136,7 @@ public class CardManager : BaseMonoBehaviour
 
         // // Lấy count phần tử đầu
         // return pool.GetRange(0, count);
-        return new List<int> { 0, 1, 2 };
+        return new List<int> { 0, 1 };
 
     }
 
@@ -164,6 +189,6 @@ public class CardManager : BaseMonoBehaviour
 
     private void CheckWin()
     {
-        
+
     }
 }

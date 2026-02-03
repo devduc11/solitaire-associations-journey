@@ -12,21 +12,21 @@
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "7b9808d339e4cc6571e8793d63bf6aa7d3423975"
+      "hash": "64f17ac0872857913c36463b3faff1c981aec583"
     },
     "com.datdb.networktime": {
       "version": "https://github.com/dat-dangba/NetworkTime.git",
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "23bc6360829712331fe4bff978add6dc37f534fc"
+      "hash": "57cd60b007d22bed9ccb7da2ea1fa1790784dd3b"
     },
     "com.datdb.savegame": {
       "version": "https://github.com/dat-dangba/SaveGame.git",
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "12b2e605b852a64566de174b2b15c1f49a513987"
+      "hash": "1f8e8267b6902ceedb8ca3f1be55e83e674df118"
     },
     "com.pnad.initproject": {
       "version": "https://github.com/devduc11/com.pnad.initproject.git",

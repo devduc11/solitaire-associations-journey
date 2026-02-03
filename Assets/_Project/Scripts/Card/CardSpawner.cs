@@ -13,6 +13,7 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
     // private RectTransform noGroupRect;
     [SerializeField]
     private List<ItemCard> itemCards = new List<ItemCard>();
+    public List<ItemCard> ItemCards => itemCards;
 
     [SerializeField]
     private List<ItemCard> noGroupItemCards = new List<ItemCard>();
@@ -34,17 +35,10 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
     {
         if (GroupCardSpawner.Instance.GroupContainsCards().Count == 0) return;
         ItemCard itemCard = Spawn(transform.position, true);
-        itemCard.SetPos();
         int index = isGold ? 1 : (cardPackage.SpriteCardType.Count > 0 ? 0 : 1);
-        itemCard.ShowSpriteOrName(index);
-        itemCard.SetIsGold(isGold);
-        itemCard.SetTarget(target);
-        itemCard.CardID = cardPackage.IDCardPackage;
-        itemCard.name = $"itemCard_{cardPackage.NameCardPackage}";
         RectTransform rectItemPosCard = PosCard.Instance.SizeImgItemPosCard();
         Vector2 size = new Vector2(rectItemPosCard.rect.width, rectItemPosCard.rect.height);
-        itemCard.SetSize(size);
-        itemCard.OnOffRaycastTarget(false);
+        itemCard.SetStatus(cardPackage, index, isGold, target, size);
         noGroupManager.SetSize(size);
         LoadDataCard(index, cardPackage, itemCard);
         itemCards.Add(itemCard);
@@ -76,7 +70,8 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
                 {
                     selectedSprite = spriteData;
                     int originalIndex = cardPackage.SpriteCardType.IndexOf(selectedSprite);
-                    Debug.Log($"pnad: {originalIndex}");
+                    itemCard.SetIdTypeCard(originalIndex);
+                    // Debug.Log($"pnad: {originalIndex}");
                     break;
                 }
             }
@@ -107,7 +102,8 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
                 {
                     selectedName = nameData;
                     int originalIndex = cardPackage.NameType.IndexOf(selectedName);
-                    Debug.Log($"pnad: {originalIndex}");
+                    // Debug.Log($"pnad: {originalIndex}");
+                    itemCard.SetIdTypeCard(originalIndex);
                     break;
                 }
             }
@@ -163,11 +159,90 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
             if (!itemCard.IsGroup)
             {
                 itemCard.gameObject.SetActive(false);
+                itemCard.SetSlotIndex(-1);
+                itemCard.SetIndexGroup(-1);
+                itemCard.SetIndexGroupMerge(-1);
                 // itemCard.transform.SetParent(noGroupRect);
                 noGroupItemCards.Add(itemCard);
             }
         }
         noGroupManager.gameObject.SetActive(true);
+        SaveLevelManager.Instance.SaveLevelProgress();
+    }
+
+    public void SpawnItemCardLevelProgress(CardPackage cardPackage, SaveItemCard saveItemCard)
+    {
+        ItemCard itemCard = Spawn(transform.position, true);
+        RectTransform rectItemPosCard = PosCard.Instance.SizeImgItemPosCard();
+        Vector2 size = new Vector2(rectItemPosCard.rect.width, rectItemPosCard.rect.height);
+        itemCard.SetStatusLevelProgress(cardPackage, saveItemCard, size);
+        noGroupManager.SetSize(size);
+        itemCards.Add(itemCard);
+    }
+
+    public void CheckGroupLevelProgress()
+    {
+        List<ItemGroupCard> itemGroupCards = GroupCardSpawner.Instance.GroupContainsCards();
+        List<ItemGroupMerge> itemGroupMerges = GroupMergeSpawner.Instance.ItemGroupMerges;
+
+        Dictionary<int, ItemGroupCard> groupByIndex = new Dictionary<int, ItemGroupCard>(itemGroupCards.Count);
+        Dictionary<int, ItemGroupMerge> groupMergeByIndex = new Dictionary<int, ItemGroupMerge>(itemGroupMerges.Count);
+
+        for (int i = 0; i < itemGroupCards.Count; i++)
+        {
+            ItemGroupCard itemGroupCard = itemGroupCards[i];
+            groupByIndex[itemGroupCard.IndexGroup] = itemGroupCard;
+        }
+
+        for (int i = 0; i < itemGroupMerges.Count; i++)
+        {
+            ItemGroupMerge itemGroupMerge = itemGroupMerges[i];
+            groupMergeByIndex[itemGroupMerge.IndexGroupMerge] = itemGroupMerge;
+        }
+
+        Dictionary<int, List<ItemCard>> itemCardsByGroupMergeIndex = new Dictionary<int, List<ItemCard>>();
+        for (int i = 0; i < itemCards.Count; i++)
+        {
+            ItemCard itemCard = itemCards[i];
+            if (itemCard.IsGroup && !itemCard.IsGroupMerge)
+            {
+                if (groupByIndex.TryGetValue(itemCard.IndexGroup, out ItemGroupCard itemGroupCard))
+                {
+                    itemCard.SetGroupCarSpawnLevelProgress(itemGroupCard);
+                }
+            }
+            else if (itemCard.IsGroup && itemCard.IsGroupMerge)
+            {
+                if (!groupMergeByIndex.ContainsKey(itemCard.IndexGroupMerge))
+                {
+                    continue;
+                }
+
+                if (!itemCardsByGroupMergeIndex.TryGetValue(itemCard.IndexGroupMerge, out List<ItemCard> mergeCards))
+                {
+                    mergeCards = new List<ItemCard>();
+                    itemCardsByGroupMergeIndex[itemCard.IndexGroupMerge] = mergeCards;
+                }
+
+                mergeCards.Add(itemCard);
+            }
+        }
+
+        if (itemCardsByGroupMergeIndex.Count > 0)
+        {
+            List<int> groupMergeIndexes = new List<int>(itemCardsByGroupMergeIndex.Keys);
+            groupMergeIndexes.Sort();
+            for (int i = 0; i < groupMergeIndexes.Count; i++)
+            {
+                int index = groupMergeIndexes[i];
+                if (groupMergeByIndex.TryGetValue(index, out ItemGroupMerge itemGroupMerge))
+                {
+                    itemGroupMerge.CheckMergeLevelProgress(itemCardsByGroupMergeIndex[index]);
+                }
+            }
+        }
+
+        AllItemCardNoGroup();
     }
 
     public void _ResetListItemCard()
