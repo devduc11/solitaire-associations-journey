@@ -254,6 +254,7 @@ public class ItemGroupCard : BaseDragObject
         ShowOutline(bl);
     }
 
+    float overlapRatio = 0.25f;
     public void AddItemCard(ItemCard itemCard, bool isMove = false, ItemGroupCard itemGroupCard = null, bool isSpawn = false, bool isGroup = false)
     {
         itemCards.Add(itemCard);
@@ -265,6 +266,8 @@ public class ItemGroupCard : BaseDragObject
             return;
         }
 
+        // if(itemCards.Count)
+
         TopCenter(isMove, isSpawn);
         if (isMove)
         {
@@ -274,7 +277,6 @@ public class ItemGroupCard : BaseDragObject
         CheckAllItemCardOnOffRaycastTarget();
     }
 
-    float overlapRatio = 0.25f;
     public void TopCenter(bool isMove = false, bool isSpawn = false)
     {
         for (int i = 0; i < itemCards.Count; i++)
@@ -325,13 +327,14 @@ public class ItemGroupCard : BaseDragObject
 
     public void TopCenterNoGroup()
     {
+        float overlapRatioNoGroup = 0.25f;
         for (int i = 0; i < itemCards.Count; i++)
         {
             ItemCard itemCard = itemCards[i];
-            SetTopCenterNoGroup(itemCard.rect, i, overlapRatio);
+            SetTopCenterNoGroup(itemCard.rect, i, overlapRatioNoGroup);
         }
 
-        ResizeParentToStack(overlapRatio);
+        ResizeParentToStack(overlapRatioNoGroup);
     }
 
     public static void SetTopCenterNoGroup(RectTransform rt, int index, float overlapRatio)

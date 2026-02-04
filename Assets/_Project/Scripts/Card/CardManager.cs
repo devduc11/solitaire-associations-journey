@@ -136,7 +136,7 @@ public class CardManager : BaseMonoBehaviour
 
         // // Lấy count phần tử đầu
         // return pool.GetRange(0, count);
-        return new List<int> { 0, 1 };
+        return new List<int> { 0, 1, 2 };
 
     }
 

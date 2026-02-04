@@ -140,7 +140,7 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
             }
         }
 
-        AllItemCardNoGroup();
+        AllItemCardNoGroup(false);
     }
 
     private void ShuffleList<T>(List<T> list)
@@ -152,22 +152,28 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
         }
     }
 
-    public void AllItemCardNoGroup()
+    public void AllItemCardNoGroup(bool isLevelProgress)
     {
         foreach (var itemCard in itemCards)
         {
             if (!itemCard.IsGroup)
             {
-                itemCard.gameObject.SetActive(false);
-                itemCard.SetSlotIndex(-1);
-                itemCard.SetIndexGroup(-1);
-                itemCard.SetIndexGroupMerge(-1);
+                itemCard.ItemCardNoGroup(isLevelProgress);
+                // itemCard.gameObject.SetActive(false);
+                // itemCard.SetSlotIndex(-1);
+                // itemCard.SetIndexGroup(-1);
+                // itemCard.SetIndexGroupMerge(-1);
                 // itemCard.transform.SetParent(noGroupRect);
                 noGroupItemCards.Add(itemCard);
             }
         }
         noGroupManager.gameObject.SetActive(true);
         SaveLevelManager.Instance.SaveLevelProgress();
+
+        if (isLevelProgress)
+        {
+            NoGroupManager.Instance.AddItemCardNoGroupLevelProgress();
+        }
     }
 
     public void SpawnItemCardLevelProgress(CardPackage cardPackage, SaveItemCard saveItemCard)
@@ -242,7 +248,7 @@ public class CardSpawner : BaseSpawner<CardSpawner, ItemCard>
             }
         }
 
-        AllItemCardNoGroup();
+        AllItemCardNoGroup(true);
     }
 
     public void _ResetListItemCard()

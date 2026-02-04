@@ -137,7 +137,7 @@ public class ItemCard : BaseDragObject
 
     public void SetGroupCarSpawn(ItemGroupCard itemGroupCard)
     {
-        SetSlotIndex(-1);
+        SetSlotIndex(-1, "SetGroupCarSpawn");
         SetIsGroup(true);
         SetParentItemCard(itemGroupCard.transform);
         itemGroupCard.AddItemCard(this, isSpawn: true, isGroup: isGroup);
@@ -247,7 +247,7 @@ public class ItemCard : BaseDragObject
 
     public void MoveNoGroup(Action endAction = null)
     {
-        SetSlotIndex(-1);
+        SetSlotIndex(-1, "MoveNoGroup");
         transform.DOMove(startPosition, 0.15f)
            .SetEase(Ease.OutCubic)
            .OnComplete(() =>
@@ -292,6 +292,7 @@ public class ItemCard : BaseDragObject
         OnOffRaycastTarget(false);
     }
 
+    int slotIndexNoGroup;
     public void SetStatusLevelProgress(CardPackage cardPackage, SaveItemCard saveItemCard, Vector2 size = default)
     {
         SetPos();
@@ -321,8 +322,9 @@ public class ItemCard : BaseDragObject
         }
         SetIndexGroup(saveItemCard.IndexGroup);
         SetIndexGroupMerge(saveItemCard.IndexGroupMerge);
-        SetSlotIndex(saveItemCard.SlotIndexNoGroup);
+        SetSlotIndex(saveItemCard.SlotIndexNoGroup, "SetStatusLevelProgress");
         SetIdTypeCard(saveItemCard.IDTypeCard);
+        slotIndexNoGroup = saveItemCard.SlotIndexNoGroup;
     }
 
     public void GroupMerge(ItemGroupMerge itemGroupMerge)
@@ -350,9 +352,21 @@ public class ItemCard : BaseDragObject
         indexGroupMerge = index;
     }
 
-    public void SetSlotIndex(int index)
+    public void SetSlotIndex(int index, string name = "")
     {
         slotIndex = index;
+        // Debug.Log($"pnad: {name}_{slotIndex}");
+    }
+
+    public void ItemCardNoGroup(bool isLevelProgress)
+    {
+        gameObject.SetActive(false);
+        if (!isLevelProgress)
+        {
+            SetSlotIndex(-1, "NoGroup");
+        }
+        SetIndexGroup(-1);
+        SetIndexGroupMerge(-1);
     }
 
 }

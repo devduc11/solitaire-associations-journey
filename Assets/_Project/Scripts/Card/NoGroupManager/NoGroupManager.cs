@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DBD.BaseGame;
 using DG.Tweening;
@@ -8,6 +9,9 @@ using UnityEngine.UI;
 
 public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
 {
+    private static NoGroupManager instance;
+    public static NoGroupManager Instance => instance;
+
     [SerializeField, GetInParent]
     private CardSpawner cardSpawner;
     [SerializeField, Get]
@@ -21,8 +25,21 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
     public bool isNoGroupCard;
     private bool isMoveLeft;
     private bool isPauseClick;
-    private int indexPos = -1;
-    private int maxCount = -1;
+    public int indexPos = -1;
+    public int maxCount = -1;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     protected override void OnEnable()
     {
@@ -43,22 +60,37 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
     private void DownItemGroupCardMove(bool isNoGroupCard)
     {
         this.isNoGroupCard = isNoGroupCard;
+        isDrag = false;
     }
-
+    public bool isDrag;
     private void DragItemGroupCardMove()
     {
+        isDrag = true;
         if (!isNoGroupCard) return;
         MoveLeft();
     }
 
     private void UpUpItemGroupCardMove()
     {
-        if (!isNoGroupCard) return;
         RemoveItemCards();
-        MoveRight();
+        if (!isDrag || indexPos <= posCards.Count - 1)
+        {
+            CheckItemLast();
+            return;
+        }
 
+        if (!isNoGroupCard) return;
+        MoveRight(() =>
+        {
+            CheckItemLast();
+        });
+    }
+
+    private void CheckItemLast()
+    {
         if (itemCards.Count == 0) return;
         itemCards[^1].OnOffRaycastTarget(true);
+        isDrag = false;
     }
 
     public void SetSize(Vector2 size)
@@ -127,6 +159,7 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
     {
         var cards = cardSpawner.NoGroupItemCards;
         if (cards.Count == 0) return;
+        isNoGroupCard = false;
 
         // maxCount = maxCount == -1 ? cards.Count - 1 : maxCount;
         maxCount = cards.Count - 1;
@@ -142,7 +175,9 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
 
         MoveCard(card, posCards[slot], 0.3f, () =>
         {
+            SaveLevelManager.Instance.SaveLevelProgress();
         });
+
         if (indexPos >= posCards.Count)
             MoveRightClick();
 
@@ -151,7 +186,8 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
         if (!itemCards.Contains(card))
         {
             itemCards.Add(card);
-            itemCards[^1].OnOffRaycastTarget(true);
+            // itemCards[^1].OnOffRaycastTarget(true);
+            CheckItemLast();
         }
     }
 
@@ -180,7 +216,7 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
         SaveLevelManager.Instance.SaveLevelProgress();
     }
 
-    private void MoveRight()
+    private void MoveRight(Action endAction = null)
     {
         if (!isMoveLeft) return;
         isMoveLeft = false;
@@ -193,7 +229,10 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
             var card = itemCards[i];
             int naturalSlot = Mathf.Clamp(i - startIndex, 0, posCards.Count - 1);
             card.SlotIndex = naturalSlot;
-            MoveCard(card, posCards[card.SlotIndex], 0.15f);
+            MoveCard(card, posCards[card.SlotIndex], 0.15f, () =>
+            {
+                endAction?.Invoke();
+            });
         }
     }
 
@@ -229,7 +268,6 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
 
     private void MoveCard(ItemCard card, RectTransform target, float time, TweenCallback onComplete = null)
     {
-        SaveLevelManager.Instance.SaveLevelProgress();
         var tween = card.rect.DOMove(target.position, time).SetEase(Ease.OutCubic);
         if (onComplete != null)
             tween.OnComplete(onComplete);
@@ -259,5 +297,28 @@ public class NoGroupManager : BaseMonoBehaviour, IPointerClickHandler
             indexPos = itemCards.Count - 1;
             maxCount = cardSpawner.NoGroupItemCards.Count - 1;
         }
+    }
+
+    public void AddItemCardNoGroupLevelProgress()
+    {
+        var cards = cardSpawner.NoGroupItemCards;
+        maxCount = cards.Count - 1;
+        for (int i = 0; i < cards.Count; i++)
+        {
+            for (int k = 0; k < posCards.Count; k++)
+            {
+                if (cards[i].SlotIndex == k)
+                {
+                    indexPos += 1;
+                    cards[i].gameObject.SetActive(true);
+                    cards[i].rect.position = posCards[k].position;
+                    itemCards.Add(cards[i]);
+                }
+            }
+        }
+
+        isPauseClick = indexPos == maxCount;
+
+        CheckItemLast();
     }
 }
